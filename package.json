@@ -6,6 +6,10 @@
   "bin": {
     "hexpress": "bin/cli.js"
   },
+  "files": [
+    "bin",
+    "src"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "release": "bash release.sh"
@@ -28,5 +32,8 @@
   "homepage": "https://github.com/yuwanadev/hexpress#readme",
   "engines": {
     "node": ">=14.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

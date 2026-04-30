@@ -1,49 +1,28 @@
-# Hexpress CLI — Setup Guide
+# Setup Guide
 
-This guide will help you install and configure the **Hexpress** CLI tool on your local machine.
-
-## 1. Prerequisites
+## Requirements
 
 - **Node.js**: v14.0.0 or higher
+- **NPM**: v6.0.0 or higher
 
-## 2. Installation
-
-Install the Hexpress CLI globally:
+## Installation
 
 ```bash
-npm i -g @yuwanadev/hexpress
+npm install -g @yuwanadev/hexpress
 ```
 
-## 3. Verification
+## Verification
 
-Verify the installation by running the help command:
+Check if the CLI is correctly installed:
 
 ```bash
 hexpress --help
 ```
 
-## 4. Usage Examples
+## Local Development
 
-### Bootstrap a new project
+If you are contributing to Hexpress:
 
-```bash
-hexpress init my-new-project
-```
-
-### Add a module (Monolith)
-
-```bash
-hexpress add user
-```
-
-### Generate a feature
-
-```bash
-hexpress generate feature order
-```
-
----
-
-> [!TIP]
-> **Hexpress CLI**
-> Standardizing Hexagonal Architecture for Javascript/Express.js projects.
+1. Clone the repository
+2. Run `npm install`
+3. Link the CLI locally: `npm link`
