@@ -1,0 +1,32 @@
+{
+  "name": "@yuwanadev/hexpress",
+  "version": "1.0.0",
+  "description": "Hexagonal Architecture Boilerplate Generator",
+  "main": "bin/cli.js",
+  "bin": {
+    "hexpress": "bin/cli.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "release": "bash release.sh"
+  },
+  "keywords": [
+    "cli",
+    "hexagonal-architecture",
+    "scaffold",
+    "boilerplate"
+  ],
+  "author": "Yuwana",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuwanadev/hexpress.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yuwanadev/hexpress/issues"
+  },
+  "homepage": "https://github.com/yuwanadev/hexpress#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
