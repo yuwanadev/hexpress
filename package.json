@@ -1,6 +1,6 @@
 {
   "name": "@yuwanadev/hexpress",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Hexagonal Architecture Boilerplate Generator",
   "main": "bin/cli.js",
   "bin": {
