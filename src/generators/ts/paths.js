@@ -30,7 +30,7 @@ function resolvePaths(root, type, scopeName, featureName, flags = {}) {
 
     // infrastructure
     controller:   path.join(base, 'infrastructure', 'adapters', 'inbound',  'http',        `${Name}Controller.ts`),
-    repository:   path.join(base, 'infrastructure', 'adapters', 'outbound', 'persistence', `${Name}Repository.ts`),
+    repository:   path.join(base, 'infrastructure', 'adapters', 'outbound', flags.outboundAdapter || 'persistence', `${Name}Repository.ts`),
 
     // wiring
     wiring: type === 'modular-monolith'

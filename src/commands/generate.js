@@ -322,19 +322,25 @@ async function generateRepository(root, config, scope, name) {
   log.title(`hexpress generate repository · ${pascal(name)}`);
   log.blank();
 
+  const adapterFolder = await prompt('Outbound adapter folder (e.g. "persistence", "cache", "external"):\n[default: persistence]> ', (ans) => ans.trim() || 'persistence');
+
   const lang = config.lang ?? 'js';
   const { resolvePaths } = resolvePathsForLang(lang);
   const gen = resolveGenerators(lang);
-  const p = resolvePaths(root, config.type, scope, name);
+  const p = resolvePaths(root, config.type, scope, name, { outboundAdapter: adapterFolder });
 
   if (await confirm('Does it need a new Outbound Port?', true)) {
     writeFile(p.outboundPort, gen.genOutboundPort(name), p.rel(p.outboundPort));
   }
 
+  if (await confirm('Does it need a new Entity?', true)) {
+    writeFile(p.entity, gen.genEntity(name), p.rel(p.entity));
+  }
+
   writeFile(p.repository, gen.genRepository(config.type, name), p.rel(p.repository));
 
   log.blank();
-  log.success(`Repository "${pascal(name)}Repository" created.`);
+  log.success(`Repository "${pascal(name)}Repository" created in ${adapterFolder}.`);
   log.blank();
 }
 
