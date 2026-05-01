@@ -93,6 +93,7 @@ async function generateCommand(argv) {
 
   switch (artefact) {
     case 'feature':
+    case 'f':
       await generateFeature(root, config, scope, name, flags);
       break;
     case 'entity':

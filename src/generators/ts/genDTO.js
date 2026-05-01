@@ -29,6 +29,14 @@ export interface ${Name}ResponseDTO {
 export function to${Name}ResponseDTO(entity: { toJSON(): ${Name}ResponseDTO }): ${Name}ResponseDTO {
   return entity.toJSON();
 }
+
+/**
+ * Build a ${Name}RequestDTO from a request.
+ */
+export function to${Name}RequestDTO(request: any): ${Name}RequestDTO {
+  // TODO: map request fields to RegisterRequestDTO
+  return request as ${Name}RequestDTO;
+}
 `;
 }
 

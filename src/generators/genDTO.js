@@ -20,6 +20,15 @@ export class ${Name}RequestDTO {
     // this.field = data.field;
     Object.assign(this, data);
   }
+
+  /**
+   * Build from a request.
+   * @param {Object} request
+   * @returns {${Name}RequestDTO}
+   */
+  static fromRequest(request) {
+    return new ${Name}RequestDTO(request);
+  }
 }
 
 /**
