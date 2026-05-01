@@ -62,7 +62,7 @@ async function generateCommand(argv) {
   // For monolith: detect or ask which module scope we are in
   let scope = detectCurrentModule(root, config);
 
-  if (config.type === 'modular-monolith' && !scope) {
+  if (config.type === 'modular-monolith' && !scope && artefact !== 'middleware') {
     const modules = config.modules || [];
     if (modules.length === 0) {
       log.info('No modules found. Creating new module...');
@@ -95,10 +95,12 @@ async function generateCommand(argv) {
 
   switch (artefact) {
     case 'feature':
+    case 'feat':
     case 'f':
       await generateFeature(root, config, scope, name, flags);
       break;
     case 'entity':
+    case 'ent':
       await generateEntity(root, config, scope, name, flags);
       break;
     case 'usecase':
@@ -108,9 +110,11 @@ async function generateCommand(argv) {
       await generatePort(root, config, scope, name);
       break;
     case 'controller':
+    case 'ctr':
       await generateController(root, config, scope, name);
       break;
     case 'repository':
+    case 'repo':
       await generateRepository(root, config, scope, name);
       break;
     case 'wiring':
@@ -126,7 +130,7 @@ async function generateCommand(argv) {
       await generateError(root, config, scope, name);
       break;
     case 'middleware':
-    case 'm':
+    case 'mid':
       await generateMiddleware(root, config, scope, name);
       break;
     default:

@@ -102,6 +102,15 @@ async function initProject(argv) {
       },
     } : {}),
     'infrastructure/': sharedInfra,
+    'constants/': {
+      '.gitkeep': '',
+    },
+    'utils/': {
+      '.gitkeep': '',
+    },
+    'middlewares/': {
+      '.gitkeep': '',
+    }
   };
 
   // ── Config files (centralised env + db pool) ─────────────────────────────
