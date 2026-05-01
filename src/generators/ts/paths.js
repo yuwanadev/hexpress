@@ -9,8 +9,9 @@ const { pascal, kebab } = require('../../utils/names');
  * Monolith:     every path is under  src/modules/<module>/
  * Microservice: every path is under  src/  (flat — no module wrapper)
  */
-function resolvePaths(root, type, scopeName, featureName) {
+function resolvePaths(root, type, scopeName, featureName, flags = {}) {
   const Name    = pascal(featureName);
+  const Suffix  = flags.databasePort ? 'DatabasePort' : 'OutboundPort';
   const base    = type === 'modular-monolith'
     ? path.join(root, 'src', 'modules', kebab(scopeName))
     : path.join(root, 'src');
@@ -23,7 +24,7 @@ function resolvePaths(root, type, scopeName, featureName) {
 
     // application
     inboundPort:  path.join(base, 'application', 'ports', 'inbound',  `${Name}Port.ts`),
-    outboundPort: path.join(base, 'application', 'ports', 'outbound', `${Name}DatabasePort.ts`),
+    outboundPort: path.join(base, 'application', 'ports', 'outbound', `${Name}${Suffix}.ts`),
     dto:          path.join(base, 'application', 'ports', 'dtos',     `${Name}DTO.ts`),
     useCase:      path.join(base, 'application', 'use-cases',         `${Name}UseCase.ts`),
 

@@ -2,31 +2,32 @@
 
 const { pascal } = require('../utils/names');
 
-function genOutboundPort(name) {
+function genOutboundPort(name, { databasePort = false } = {}) {
   const Name   = pascal(name);
+  const Suffix = databasePort ? 'DatabasePort' : 'OutboundPort';
   const Entity = Name; // entity name mirrors feature name
   return `/**
- * ${Name}DatabasePort — Outbound Port
+ * ${Name}${Suffix} — Outbound Port
  *
  * Defines what this feature needs from the persistence layer.
  * Repository adapters MUST implement this contract.
  *
  * @interface
  */
-export class ${Name}DatabasePort {
+export class ${Name}${Suffix} {
   /**
    * @param {string} id
    * @returns {Promise<import('../../entities/${Entity}.js').${Entity}|null>}
    */
   async findById(id) {
-    throw new Error('${Name}DatabasePort.findById() not implemented');
+    throw new Error('${Name}${Suffix}.findById() not implemented');
   }
 
   /**
    * @returns {Promise<import('../../entities/${Entity}.js').${Entity}[]>}
    */
   async findAll() {
-    throw new Error('${Name}DatabasePort.findAll() not implemented');
+    throw new Error('${Name}${Suffix}.findAll() not implemented');
   }
 
   /**
@@ -34,7 +35,7 @@ export class ${Name}DatabasePort {
    * @returns {Promise<void>}
    */
   async save(entity) {
-    throw new Error('${Name}DatabasePort.save() not implemented');
+    throw new Error('${Name}${Suffix}.save() not implemented');
   }
 
   /**
@@ -42,7 +43,7 @@ export class ${Name}DatabasePort {
    * @returns {Promise<void>}
    */
   async delete(id) {
-    throw new Error('${Name}DatabasePort.delete() not implemented');
+    throw new Error('${Name}${Suffix}.delete() not implemented');
   }
 }
 `;

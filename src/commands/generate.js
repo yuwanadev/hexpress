@@ -206,15 +206,15 @@ async function generateFeature(root, config, scope, featureName, flags = {}) {
   const { resolvePaths } = resolvePathsForLang(lang);
   const gen = resolveGenerators(lang);
 
-  const p = resolvePaths(root, type, scope, featureName);
+  const p = resolvePaths(root, type, scope, featureName, { databasePort: true });
 
   writeFile(p.entity, gen.genEntity(featureName), p.rel(p.entity));
   writeFile(p.dto, gen.genDTO(featureName), p.rel(p.dto));
   writeFile(p.inboundPort, gen.genInboundPort(featureName), p.rel(p.inboundPort));
-  writeFile(p.outboundPort, gen.genOutboundPort(featureName), p.rel(p.outboundPort));
-  writeFile(p.useCase, gen.genUseCase(type, featureName), p.rel(p.useCase));
+  writeFile(p.outboundPort, gen.genOutboundPort(featureName, { databasePort: true }), p.rel(p.outboundPort));
+  writeFile(p.useCase, gen.genUseCase(type, featureName, { databasePort: true }), p.rel(p.useCase));
   writeFile(p.controller, gen.genController(featureName), p.rel(p.controller));
-  writeFile(p.repository, gen.genRepository(type, featureName), p.rel(p.repository));
+  writeFile(p.repository, gen.genRepository(type, featureName, { databasePort: true }), p.rel(p.repository));
   writeFile(p.wiring, gen.genWiring(featureName, type), p.rel(p.wiring));
 
   registerFeature(root, config, kebab(featureName));

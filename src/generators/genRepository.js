@@ -2,22 +2,23 @@
 
 const { pascal } = require('../utils/names');
 
-function genRepository(type, name) {
+function genRepository(type, name, { databasePort = false } = {}) {
   const Name = pascal(name);
+  const Suffix = databasePort ? 'DatabasePort' : 'OutboundPort';
   const table = `${name.toLowerCase()}s`;
-  return `import { ${Name}DatabasePort } from '../../../../application/ports/outbound/${Name}DatabasePort.js';
+  return `import { ${Name}${Suffix} } from '../../../../application/ports/outbound/${Name}${Suffix}.js';
 import { ${Name} } from '../../../../domain/entities/${Name}.js';
 import { AppError } from '${type === 'modular-monolith' ? '../../../../../../' : '../../../../'}shared/infrastructure/http/AppError.js';
 
 /**
  * ${Name}Repository — Outbound Persistence Adapter
  *
- * Implements ${Name}DatabasePort.
+ * Implements ${Name}${Suffix}.
  * Uses pg Pool for raw SQL queries.
  * Uses ${Name}.toDomain() and entity.toPersistence() for mapping.
  * Swap the driver here without touching any other layer.
  */
-export class ${Name}Repository extends ${Name}DatabasePort {
+export class ${Name}Repository extends ${Name}${Suffix} {
   /**
    * @param {import('pg').Pool} pool
    */
