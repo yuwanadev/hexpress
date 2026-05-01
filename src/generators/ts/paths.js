@@ -36,6 +36,9 @@ function resolvePaths(root, type, scopeName, featureName) {
       ? path.join(base, `${kebab(scopeName)}.module.ts`)
       : path.join(root, 'src', `${kebab(featureName)}.wiring.ts`),
 
+    // shared
+    middleware:   path.join(root, 'src', 'shared', 'middlewares', `${Name}Middleware.ts`),
+
     // display relative to root
     rel: (p) => path.relative(root, p),
     base,

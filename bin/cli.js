@@ -34,6 +34,7 @@ const HELP = `
     port      <Name>    — application/ports/inbound|outbound/NamePort.{ts|js}
     event     <Name>    — domain/events/NameEvent.{ts|js}
     error     <Name>    — domain/errors/NameError.{ts|js}
+    middleware <Name>   — shared/middlewares/NameMiddleware.{ts|js}
     feature   <Name>    — Full stack: port → usecase → controller+route → repository
 
   Flags (init):

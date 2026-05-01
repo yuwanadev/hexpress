@@ -28,6 +28,7 @@ const { genEnv }                 = require('./genEnv');
 const { genReadme }              = require('./genReadme');
 const { genConfig }              = require('./genConfig');
 const { genDatabase }            = require('./genDatabase');
+const { genMiddleware }          = require('./genMiddleware');
 
 module.exports = {
   genEntity,
@@ -58,4 +59,5 @@ module.exports = {
   genReadme,
   genConfig,
   genDatabase,
+  genMiddleware,
 };

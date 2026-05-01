@@ -34,13 +34,15 @@ async function generateCommand(argv) {
       '[7] wiring\n' +
       '[8] dto\n' +
       '[9] event\n' +
-      '[10] error\n> ',
+      '[10] error\n' +
+      '[11] middleware\n> ',
       (ans) => {
         const map = {
           '1': 'feature', '2': 'entity', '3': 'usecase', '4': 'port', '5': 'controller',
-          '6': 'repository', '7': 'wiring', '8': 'dto', '9': 'event', '10': 'error'
+          '6': 'repository', '7': 'wiring', '8': 'dto', '9': 'event', '10': 'error', '11': 'middleware'
         };
-        return map[ans] || (['feature', 'entity', 'usecase', 'port', 'controller', 'repository', 'wiring', 'dto', 'event', 'error'].includes(ans) ? ans : null);
+        const valid = ['feature', 'entity', 'usecase', 'port', 'controller', 'repository', 'wiring', 'dto', 'event', 'error', 'middleware'];
+        return map[ans] || (valid.includes(ans) ? ans : null);
       }
     );
   }
@@ -123,10 +125,31 @@ async function generateCommand(argv) {
     case 'error':
       await generateError(root, config, scope, name);
       break;
+    case 'middleware':
+    case 'm':
+      await generateMiddleware(root, config, scope, name);
+      break;
     default:
-      log.error(`Unknown artefact "${artefact}". Choose: feature | entity | usecase | port | controller | repository | wiring | dto | event | error`);
+      log.error(`Unknown artefact "${artefact}". Choose: feature | entity | usecase | port | controller | repository | wiring | dto | event | error | middleware`);
       process.exit(1);
   }
+}
+
+async function generateMiddleware(root, config, scope, name) {
+  log.title(`hexpress generate middleware · ${pascal(name)}`);
+  log.blank();
+
+  const lang = config.lang ?? 'js';
+  const { resolvePaths } = resolvePathsForLang(lang);
+  const gen = resolveGenerators(lang);
+
+  const p = resolvePaths(root, config.type, scope, name);
+  const middlewareName = pascal(name).endsWith('Middleware') ? pascal(name) : `${pascal(name)}Middleware`;
+  writeFile(p.middleware, gen.genMiddleware(name), p.rel(p.middleware));
+
+  log.blank();
+  log.success(`Middleware "${middlewareName}" created.`);
+  log.blank();
 }
 
 function createModuleSkeleton(root, config, moduleName) {
