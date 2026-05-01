@@ -1,12 +1,11 @@
-'use strict';
-
-const path = require('path');
-const { parseArgs } = require('../utils/parseArgs');
-const { log } = require('../utils/logger');
-const { writeFile } = require('../utils/scaffold');
-const { findProject, detectCurrentModule, registerFeature } = require('../utils/context');
+const { prompt, confirm } = require('../utils/prompts');
+const { registerModule, findProject, detectCurrentModule, registerFeature } = require('../utils/context');
+const { scaffold, writeFile } = require('../utils/scaffold');
 const { resolveGenerators, resolvePaths: resolvePathsForLang } = require('../utils/lang');
-const { pascal, kebab } = require('../utils/names');
+const { parseArgs } = require('../utils/parseArgs');
+const { kebab, pascal } = require('../utils/names');
+const path = require('path');
+const { log } = require('../utils/logger');
 
 /**
  * hexpress generate <artefact> <n> [--aggregate]
@@ -19,14 +18,35 @@ const { pascal, kebab } = require('../utils/names');
  *   event     — domain/events/NameEvent.{ts|js}
  *   error     — domain/errors/NameError.{ts|js}
  */
-function generateCommand(argv) {
+async function generateCommand(argv) {
   const { args, flags } = parseArgs(argv);
-  const [artefact, name] = args;
+  let [artefact, name] = args;
 
-  if (!artefact || !name) {
-    log.error('Usage: hexpress generate <artefact> <n>');
-    log.dim('  artefacts: feature | entity | usecase | port | event | error');
-    process.exit(1);
+  if (!artefact) {
+    artefact = await prompt(
+      'What do you want to generate?\n' +
+      '[1] feature (full stack)\n' +
+      '[2] entity\n' +
+      '[3] usecase\n' +
+      '[4] port\n' +
+      '[5] controller\n' +
+      '[6] repository\n' +
+      '[7] wiring\n' +
+      '[8] dto\n' +
+      '[9] event\n' +
+      '[10] error\n> ',
+      (ans) => {
+        const map = {
+          '1': 'feature', '2': 'entity', '3': 'usecase', '4': 'port', '5': 'controller',
+          '6': 'repository', '7': 'wiring', '8': 'dto', '9': 'event', '10': 'error'
+        };
+        return map[ans] || (['feature', 'entity', 'usecase', 'port', 'controller', 'repository', 'wiring', 'dto', 'event', 'error'].includes(ans) ? ans : null);
+      }
+    );
+  }
+
+  if (!name) {
+    name = await prompt('Name of the artefact (e.g. "user", "order"):\n> ', (ans) => ans.trim() || null);
   }
 
   const project = findProject();
@@ -37,33 +57,96 @@ function generateCommand(argv) {
 
   const { root, config } = project;
 
-  // For monolith: detect which module scope we are in (from cwd)
-  const currentModule = detectCurrentModule(root, config);
-  const scope = currentModule ?? kebab(name); // microservice: scope = feature name
+  // For monolith: detect or ask which module scope we are in
+  let scope = detectCurrentModule(root, config);
+
+  if (config.type === 'modular-monolith' && !scope) {
+    const modules = config.modules || [];
+    if (modules.length === 0) {
+      log.info('No modules found. Creating new module...');
+      scope = await prompt('New module name:\n> ', (ans) => kebab(ans) || null);
+      createModuleSkeleton(root, config, scope);
+    } else {
+      let question = 'Which module?\n';
+      modules.forEach((m, i) => {
+        question += `[${i + 1}] ${m}\n`;
+      });
+      question += `[n] Create New Module\n> `;
+
+      const choice = await prompt(question, (ans) => {
+        if (ans.toLowerCase() === 'n') return 'NEW';
+        const idx = parseInt(ans, 10) - 1;
+        if (idx >= 0 && idx < modules.length) return modules[idx];
+        return null;
+      });
+
+      if (choice === 'NEW') {
+        scope = await prompt('New module name:\n> ', (ans) => kebab(ans) || null);
+        createModuleSkeleton(root, config, scope);
+      } else {
+        scope = choice;
+      }
+    }
+  } else if (!scope) {
+    scope = kebab(name);
+  }
 
   switch (artefact) {
     case 'feature':
-      generateFeature(root, config, name, flags);
+      await generateFeature(root, config, scope, name, flags);
       break;
     case 'entity':
-      generateEntity(root, config, scope, name, flags);
+      await generateEntity(root, config, scope, name, flags);
       break;
     case 'usecase':
-      generateUseCase(root, config, scope, name);
+      await generateUseCase(root, config, scope, name);
       break;
     case 'port':
-      generatePort(root, config, scope, name);
+      await generatePort(root, config, scope, name);
+      break;
+    case 'controller':
+      await generateController(root, config, scope, name);
+      break;
+    case 'repository':
+      await generateRepository(root, config, scope, name);
+      break;
+    case 'wiring':
+      await generateWiring(root, config, scope, name);
+      break;
+    case 'dto':
+      await generateDTO(root, config, scope, name);
       break;
     case 'event':
-      generateEvent(root, config, scope, name);
+      await generateEvent(root, config, scope, name);
       break;
     case 'error':
-      generateError(root, config, scope, name);
+      await generateError(root, config, scope, name);
       break;
     default:
-      log.error(`Unknown artefact "${artefact}". Choose: feature | entity | usecase | port | event | error`);
+      log.error(`Unknown artefact "${artefact}". Choose: feature | entity | usecase | port | controller | repository | wiring | dto | event | error`);
       process.exit(1);
   }
+}
+
+function createModuleSkeleton(root, config, moduleName) {
+  const modulePath = path.join(root, 'src', 'modules', moduleName);
+  const fs = require('fs');
+  if (fs.existsSync(modulePath)) return;
+
+  scaffold(modulePath, {
+    'domain/': { 'entities/': {} },
+    'application/': {
+      'ports/': { 'inbound/': {}, 'outbound/': {}, 'dtos/': {} },
+      'use-cases/': {},
+    },
+    'infrastructure/': {
+      'adapters/': {
+        'inbound/': { 'http/': {} },
+        'outbound/': { 'persistence/': {} },
+      },
+    },
+  });
+  registerModule(root, config, moduleName);
 }
 
 // ─── Feature (full stack) ────────────────────────────────────────────────────
@@ -81,21 +164,13 @@ function generateCommand(argv) {
  *
  * @param {string} root         - Project root
  * @param {object} config       - hexpress.config.json
+ * @param {string} scope        - Module scope
  * @param {string} featureName  - e.g. "user"
  * @param {object} [flags]
  */
-function generateFeature(root, config, featureName, flags = {}) {
+async function generateFeature(root, config, scope, featureName, flags = {}) {
   const { type } = config;
   const lang = config.lang ?? 'js';
-
-  // For monolith, scope is the module the user is currently in (or same name)
-  const currentModule = detectCurrentModule(root, config);
-  const scope = currentModule ?? kebab(featureName);
-
-  // For monolith, validate the module exists
-  if (type === 'modular-monolith' && !currentModule) {
-    log.warn(`Not inside a module directory. Generating into module "${scope}".`);
-  }
 
   log.title(`hexpress generate feature · ${pascal(featureName)}  [${type}]  [${lang}]`);
   log.blank();
@@ -117,22 +192,13 @@ function generateFeature(root, config, featureName, flags = {}) {
   registerFeature(root, config, kebab(featureName));
 
   log.blank();
-  log.success(`Feature "${pascal(featureName)}" generated.`);
-  log.blank();
-  log.info('Wire it up in src/app.' + (lang === 'ts' ? 'ts' : 'js') + ':');
-  if (type === 'modular-monolith') {
-    log.dim(`  import { compose${pascal(featureName)}Module } from './modules/${scope}/${scope}.module.js';`);
-    log.dim(`  compose${pascal(featureName)}Module({ model, router });`);
-  } else {
-    log.dim(`  import { compose${pascal(featureName)} } from './${kebab(featureName)}.wiring.js';`);
-    log.dim(`  compose${pascal(featureName)}({ model, router });`);
-  }
+  log.success(`Feature "${pascal(featureName)}" processed.`);
   log.blank();
 }
 
 // ─── Single artefact generators ──────────────────────────────────────────────
 
-function generateEntity(root, config, scope, name, flags = {}) {
+async function generateEntity(root, config, scope, name, flags = {}) {
   log.title(`hexpress generate entity · ${pascal(name)}`);
   log.blank();
 
@@ -150,15 +216,29 @@ function generateEntity(root, config, scope, name, flags = {}) {
   log.blank();
 }
 
-function generateUseCase(root, config, scope, name) {
+async function generateUseCase(root, config, scope, name) {
   log.title(`hexpress generate usecase · ${pascal(name)}`);
   log.blank();
 
   const lang = config.lang ?? 'js';
   const { resolvePaths } = resolvePathsForLang(lang);
   const gen = resolveGenerators(lang);
-
   const p = resolvePaths(root, config.type, scope, name);
+
+  // UseCase depends on: Port, DTO, OutboundPort, Entity
+  if (await confirm('Does it need a new Inbound Port?', true)) {
+    writeFile(p.inboundPort, gen.genInboundPort(name), p.rel(p.inboundPort));
+  }
+  if (await confirm('Does it need a new Outbound Port?', true)) {
+    writeFile(p.outboundPort, gen.genOutboundPort(name), p.rel(p.outboundPort));
+  }
+  if (await confirm('Does it need a new DTO?', true)) {
+    writeFile(p.dto, gen.genDTO(name), p.rel(p.dto));
+  }
+  if (await confirm('Does it need a new Entity?', true)) {
+    writeFile(p.entity, gen.genEntity(name), p.rel(p.entity));
+  }
+
   writeFile(p.useCase, gen.genUseCase(config.type, name), p.rel(p.useCase));
 
   log.blank();
@@ -166,25 +246,103 @@ function generateUseCase(root, config, scope, name) {
   log.blank();
 }
 
-function generatePort(root, config, scope, name) {
+async function generatePort(root, config, scope, name) {
   log.title(`hexpress generate port · ${pascal(name)}`);
   log.blank();
 
   const lang = config.lang ?? 'js';
   const { resolvePaths } = resolvePathsForLang(lang);
   const gen = resolveGenerators(lang);
-
   const p = resolvePaths(root, config.type, scope, name);
-  writeFile(p.inboundPort, gen.genInboundPort(name), p.rel(p.inboundPort));
-  writeFile(p.outboundPort, gen.genOutboundPort(name), p.rel(p.outboundPort));
-  writeFile(p.dto, gen.genDTO(name), p.rel(p.dto));
+
+  if (await confirm('Generate Inbound Port?', true)) {
+    writeFile(p.inboundPort, gen.genInboundPort(name), p.rel(p.inboundPort));
+  }
+  if (await confirm('Generate Outbound Port?', true)) {
+    writeFile(p.outboundPort, gen.genOutboundPort(name), p.rel(p.outboundPort));
+  }
+  if (await confirm('Generate DTO?', true)) {
+    writeFile(p.dto, gen.genDTO(name), p.rel(p.dto));
+  }
 
   log.blank();
-  log.success(`Ports for "${pascal(name)}" created.`);
+  log.success(`Ports for "${pascal(name)}" processed.`);
   log.blank();
 }
 
-function generateEvent(root, config, scope, name) {
+async function generateController(root, config, scope, name) {
+  log.title(`hexpress generate controller · ${pascal(name)}`);
+  log.blank();
+
+  const lang = config.lang ?? 'js';
+  const { resolvePaths } = resolvePathsForLang(lang);
+  const gen = resolveGenerators(lang);
+  const p = resolvePaths(root, config.type, scope, name);
+
+  if (await confirm('Does it need a new Inbound Port?', true)) {
+    writeFile(p.inboundPort, gen.genInboundPort(name), p.rel(p.inboundPort));
+  }
+
+  writeFile(p.controller, gen.genController(name), p.rel(p.controller));
+
+  log.blank();
+  log.success(`Controller "${pascal(name)}Controller" created.`);
+  log.blank();
+}
+
+async function generateRepository(root, config, scope, name) {
+  log.title(`hexpress generate repository · ${pascal(name)}`);
+  log.blank();
+
+  const lang = config.lang ?? 'js';
+  const { resolvePaths } = resolvePathsForLang(lang);
+  const gen = resolveGenerators(lang);
+  const p = resolvePaths(root, config.type, scope, name);
+
+  if (await confirm('Does it need a new Outbound Port?', true)) {
+    writeFile(p.outboundPort, gen.genOutboundPort(name), p.rel(p.outboundPort));
+  }
+
+  writeFile(p.repository, gen.genRepository(config.type, name), p.rel(p.repository));
+
+  log.blank();
+  log.success(`Repository "${pascal(name)}Repository" created.`);
+  log.blank();
+}
+
+async function generateWiring(root, config, scope, name) {
+  log.title(`hexpress generate wiring · ${pascal(name)}`);
+  log.blank();
+
+  const lang = config.lang ?? 'js';
+  const { resolvePaths } = resolvePathsForLang(lang);
+  const gen = resolveGenerators(lang);
+  const p = resolvePaths(root, config.type, scope, name);
+
+  writeFile(p.wiring, gen.genWiring(name, config.type), p.rel(p.wiring));
+
+  log.blank();
+  log.success(`Wiring for "${pascal(name)}" created.`);
+  log.blank();
+}
+
+async function generateDTO(root, config, scope, name) {
+  log.title(`hexpress generate dto · ${pascal(name)}`);
+  log.blank();
+
+  const lang = config.lang ?? 'js';
+  const { resolvePaths } = resolvePathsForLang(lang);
+  const gen = resolveGenerators(lang);
+  const p = resolvePaths(root, config.type, scope, name);
+
+  writeFile(p.dto, gen.genDTO(name), p.rel(p.dto));
+
+  log.blank();
+  log.success(`DTO "${pascal(name)}DTO" created.`);
+  log.blank();
+}
+
+async function generateEvent(root, config, scope, name) {
   log.title(`hexpress generate event · ${pascal(name)}`);
   log.blank();
 
@@ -202,7 +360,7 @@ function generateEvent(root, config, scope, name) {
   log.blank();
 }
 
-function generateError(root, config, scope, name) {
+async function generateError(root, config, scope, name) {
   log.title(`hexpress generate error · ${pascal(name)}`);
   log.blank();
 

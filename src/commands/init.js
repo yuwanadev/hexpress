@@ -2,13 +2,14 @@
 
 const fs = require('fs');
 const path = require('path');
-const readline = require('readline');
 
 const { parseArgs } = require('../utils/parseArgs');
 const { log } = require('../utils/logger');
 const { scaffold } = require('../utils/scaffold');
 const { writeConfig } = require('../utils/context');
 const { resolveGenerators } = require('../utils/lang');
+
+const { prompt } = require('../utils/prompts');
 
 const VALID_TYPES = ['modular-monolith', 'microservice'];
 const VALID_LANGS = ['js', 'ts'];
@@ -175,20 +176,5 @@ async function initProject(argv) {
   log.blank();
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function prompt(question, validate) {
-  return new Promise((resolve) => {
-    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-    const ask = () => {
-      rl.question(question, (ans) => {
-        const result = validate(ans.trim());
-        if (result !== null) { rl.close(); resolve(result); }
-        else { log.warn('Invalid option. Try again.'); ask(); }
-      });
-    };
-    ask();
-  });
-}
 
 module.exports = { initProject };

@@ -51,11 +51,27 @@ const HELP = `
     hexpress info
 `;
 
-switch (command) {
-  case 'init': initProject(rest); break;
-  case 'add': addCommand(rest); break;
-  case 'generate': generateCommand(rest); break;
-  case 'g': generateCommand(rest); break;
-  case 'info': infoCommand(); break;
-  default: console.log(HELP);
+async function main() {
+  switch (command) {
+    case 'init': 
+      await initProject(rest); 
+      break;
+    case 'add': 
+      addCommand(rest); 
+      break;
+    case 'generate':
+    case 'g': 
+      await generateCommand(rest); 
+      break;
+    case 'info': 
+      infoCommand(); 
+      break;
+    default: 
+      console.log(HELP);
+  }
 }
+
+main().catch(err => {
+  log.error(err.message);
+  process.exit(1);
+});
