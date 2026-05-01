@@ -19,13 +19,15 @@ import type { I${Name}Port } from '../../../../application/ports/inbound/${Name}
  *   ctrl.registerRoutes(router);
  */
 export class ${Name}Controller {
+  readonly prefix = "/${route}s";
   constructor(private readonly useCase: I${Name}Port) {}
 
   // ── Route Registration ────────────────────────────────────────────────────
 
   registerRoutes(router: Router): void {
-    router.get('/${route}s',     this.findAll.bind(this));
-    router.get('/${route}s/:id', this.findById.bind(this));
+    router.use(this.prefix, router);
+    router.post('/', this.findAll.bind(this));
+    router.get('/', this.findById.bind(this));
   }
 
   // ── Handlers ──────────────────────────────────────────────────────────────

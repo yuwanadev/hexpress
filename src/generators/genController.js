@@ -3,7 +3,7 @@
 const { pascal, camel, kebab } = require('../utils/names');
 
 function genController(name) {
-  const Name  = pascal(name);
+  const Name = pascal(name);
   const route = kebab(name);
   return `import { ${Name}Port } from '../../../../application/ports/inbound/${Name}Port.js';
 
@@ -23,6 +23,7 @@ export class ${Name}Controller {
    */
   constructor(${camel(name)}UseCase) {
     this.useCase = ${camel(name)}UseCase;
+    this.prefix = "/${route}s";
   }
 
   // ── Route Registration ────────────────────────────────────────────────────
@@ -34,11 +35,12 @@ export class ${Name}Controller {
    * @param {import('express').Router} router
    */
   registerRoutes(router) {
-    router.post('/${route}s',       this.#create.bind(this));
-    router.get('/${route}s',        this.#findAll.bind(this));
-    router.get('/${route}s/:id',    this.#findById.bind(this));
-    router.put('/${route}s/:id',    this.#update.bind(this));
-    router.delete('/${route}s/:id', this.#delete.bind(this));
+    router.use(this.prefix, router);
+    router.post('/',       this.#create.bind(this));
+    router.get('/',        this.#findAll.bind(this));
+    router.get('/:id',     this.#findById.bind(this));
+    router.put('/:id',     this.#update.bind(this));
+    router.delete('/:id',  this.#delete.bind(this));
   }
 
   // ── Handlers ──────────────────────────────────────────────────────────────
