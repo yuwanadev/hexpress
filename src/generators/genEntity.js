@@ -11,10 +11,10 @@ function genEntity(name) {
  * Mapper logic lives here as static methods (toDomain / toJSON).
  */
 export class ${Name} {
-  constructor({ id, createdAt, updatedAt }) {
+  constructor({ id, createdAt, updatedAt } = {}) {
     this.id        = id;
-    this.createdAt = createdAt ?? new Date();
-    this.updatedAt = updatedAt ?? new Date();
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
   }
 
   // ── Mapper ────────────────────────────────────────────────────────────────
@@ -27,8 +27,8 @@ export class ${Name} {
   static toDomain(record) {
     return new ${Name}({
       id:        record.id,
-      createdAt: new Date(record.created_at ?? record.createdAt),
-      updatedAt: new Date(record.updated_at ?? record.updatedAt),
+      createdAt: record.created_at,
+      updatedAt: record.updated_at,
     });
   }
 

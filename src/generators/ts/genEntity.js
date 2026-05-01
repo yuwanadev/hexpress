@@ -12,26 +12,26 @@ function genEntity(name) {
  */
 
 export interface ${Name}Props {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
+  id?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface ${Name}Persistence {
-  id: string;
-  created_at: Date;
-  updated_at: Date;
+  id?: string;
+  created_at?: Date;
+  updated_at?: Date;
 }
 
 export class ${Name} {
-  public readonly id: string;
-  public createdAt: Date;
-  public updatedAt: Date;
+  public readonly id?: string;
+  public createdAt?: Date;
+  public updatedAt?: Date;
 
   constructor({ id, createdAt, updatedAt }: ${Name}Props) {
     this.id        = id;
-    this.createdAt = createdAt ?? new Date();
-    this.updatedAt = updatedAt ?? new Date();
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
   }
 
   // ── Mapper ────────────────────────────────────────────────────────────────
@@ -42,8 +42,8 @@ export class ${Name} {
   static toDomain(record: ${Name}Persistence): ${Name} {
     return new ${Name}({
       id:        record.id,
-      createdAt: new Date(record.created_at ?? record.updated_at),
-      updatedAt: new Date(record.updated_at ?? record.created_at),
+      createdAt: record.created_at,
+      updatedAt: record.updated_at,
     });
   }
 

@@ -17,9 +17,9 @@ export interface ${Name}RequestDTO {
  * ${Name}ResponseDTO — Outbound response shape.
  */
 export interface ${Name}ResponseDTO {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
+  id?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
   // TODO: add additional response fields
 }
 
