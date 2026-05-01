@@ -3,10 +3,9 @@
 const { pascal } = require('../../utils/names');
 
 function genInboundPort(name) {
-  const Name    = pascal(name);
-  const nameDTO = `${Name}RequestDTO`;
-  const resDTO  = `${Name}ResponseDTO`;
-  return `import type { ${nameDTO}, ${resDTO} } from '../dtos/${Name}DTO.js';
+  const Name = pascal(name);
+  const resDTO = `${Name}ResponseDTO`;
+  return `import type { ${resDTO} } from '../dtos/${Name}DTO';
 
 /**
  * ${Name}Port — Inbound Port (Interface)
@@ -15,11 +14,8 @@ function genInboundPort(name) {
  * Use-cases MUST implement this contract.
  */
 export interface I${Name}Port {
-  create(request: ${nameDTO}): Promise<${resDTO}>;
   findById(id: string): Promise<${resDTO}>;
   findAll(): Promise<${resDTO}[]>;
-  update(id: string, request: Partial<${nameDTO}>): Promise<${resDTO}>;
-  delete(id: string): Promise<void>;
 }
 `;
 }

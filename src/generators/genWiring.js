@@ -17,17 +17,17 @@ import { ${Name}Controller } from './infrastructure/adapters/inbound/http/${Name
  * Binds ports to adapters. This is the ONLY place that knows
  * which concrete class implements which interface.
  *
- * @param {{ model: any, router: import('express').Router }} deps
+ * @param {{ pool: import('pg').Pool, router: import('express').Router }} deps
  */
-export function compose${Name}({ model, router }) {
+export function compose${Name}({ pool, router }) {
   // Outbound: persistence adapter → injected into use case
-  const ${var_}Db         = new ${Name}Repository({ model });
+  const ${var_}Db         = new ${Name}Repository(pool);
 
   // Application: use case implements inbound port, receives outbound port
-  const ${var_}UseCase    = new ${Name}UseCase({ ${var_}Db });
+  const ${var_}UseCase    = new ${Name}UseCase(${var_}Db);
 
   // Inbound: controller receives use case (via inbound port interface)
-  const ${var_}Controller = new ${Name}Controller({ ${var_}UseCase });
+  const ${var_}Controller = new ${Name}Controller(${var_}UseCase);
 
   // Register HTTP routes
   ${var_}Controller.registerRoutes(router);
@@ -48,12 +48,12 @@ import { ${Name}Controller } from './infrastructure/adapters/inbound/http/${Name
  * Binds ports to adapters for the ${Name} module.
  * Import and call this from your root app.js.
  *
- * @param {{ model: any, router: import('express').Router }} deps
+ * @param {{ pool: import('pg').Pool, router: import('express').Router }} deps
  */
-export function compose${Name}Module({ model, router }) {
-  const ${var_}Db         = new ${Name}Repository({ model });
-  const ${var_}UseCase    = new ${Name}UseCase({ ${var_}Db });
-  const ${var_}Controller = new ${Name}Controller({ ${var_}UseCase });
+export function compose${Name}Module({ pool, router }) {
+  const ${var_}Db         = new ${Name}Repository(pool);
+  const ${var_}UseCase    = new ${Name}UseCase(${var_}Db);
+  const ${var_}Controller = new ${Name}Controller(${var_}UseCase);
 
   ${var_}Controller.registerRoutes(router);
 

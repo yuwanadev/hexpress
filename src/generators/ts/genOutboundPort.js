@@ -3,9 +3,9 @@
 const { pascal } = require('../../utils/names');
 
 function genOutboundPort(name) {
-  const Name   = pascal(name);
+  const Name = pascal(name);
   const Entity = Name;
-  return `import type { ${Entity} } from '../../domain/entities/${Entity}.js';
+  return `import type { ${Entity} } from '../../../domain/entities/${Entity}';
 
 /**
  * ${Name}DatabasePort — Outbound Port (Interface)
@@ -16,8 +16,6 @@ function genOutboundPort(name) {
 export interface I${Name}DatabasePort {
   findById(id: string): Promise<${Entity} | null>;
   findAll(): Promise<${Entity}[]>;
-  save(entity: ${Entity}): Promise<void>;
-  delete(id: string): Promise<void>;
 }
 `;
 }

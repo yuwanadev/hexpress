@@ -15,12 +15,17 @@ const { genSharedEntity }    = require('./genSharedEntity');
 const { genSharedAggregateRoot } = require('./genSharedAggregateRoot');
 const { genSharedEventBus }  = require('./genSharedEventBus');
 const { genSharedErrorHandler } = require('./genSharedErrorHandler');
+const { genResponseHandler }     = require('./genResponseHandler');
+const { genAppError }            = require('./genAppError');
+const { genAppResponse }         = require('./genAppResponse');
 const { genAppJs }           = require('./genAppJs');
 const { genIndexJs }         = require('./genIndexJs');
 const { genPackageJson }     = require('./genPackageJson');
 const { genGitignore }       = require('./genGitignore');
 const { genEnv }             = require('./genEnv');
 const { genReadme }          = require('./genReadme');
+const { genConfig }          = require('./genConfig');
+const { genDatabase }        = require('./genDatabase');
 
 module.exports = {
   genEntity,
@@ -38,10 +43,15 @@ module.exports = {
   genSharedAggregateRoot,
   genSharedEventBus,
   genSharedErrorHandler,
+  genResponseHandler,
+  genAppError,
+  genAppResponse,
   genAppJs,
   genIndexJs,
   genPackageJson,
   genGitignore,
   genEnv,
   genReadme,
+  genConfig,
+  genDatabase,
 };

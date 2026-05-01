@@ -15,6 +15,10 @@ function genPackageJson(name, type) {
     },
     dependencies: {
       express: '^4.18.2',
+      cors:    '^2.8.5',
+      helmet:  '^7.1.0',
+      pg:      '^8.13.0',
+      dotenv:  '^16.4.0',
     },
     devDependencies: {
       jest:   '^29.0.0',

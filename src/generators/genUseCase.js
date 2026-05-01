@@ -2,9 +2,9 @@
 
 const { pascal, camel } = require('../utils/names');
 
-function genUseCase(name) {
-  const Name   = pascal(name);
-  const varDb  = `${camel(name)}Db`;
+function genUseCase(type, name) {
+  const Name = pascal(name);
+  const varDb = `${camel(name)}Db`;
   return `import { ${Name}Port }         from '../ports/inbound/${Name}Port.js';
 import { ${Name}ResponseDTO }  from '../ports/dtos/${Name}DTO.js';
 import { ${Name} }             from '../../domain/entities/${Name}.js';
@@ -17,9 +17,9 @@ import { ${Name} }             from '../../domain/entities/${Name}.js';
  */
 export class ${Name}UseCase extends ${Name}Port {
   /**
-   * @param {{ ${varDb}: import('../ports/outbound/${Name}DatabasePort.js').${Name}DatabasePort }} deps
+   * @param {import('../ports/outbound/${Name}DatabasePort.js').${Name}DatabasePort} ${varDb}
    */
-  constructor({ ${varDb} }) {
+  constructor(${varDb}) {
     super();
     this.db = ${varDb};
   }

@@ -25,6 +25,7 @@ const HELP = `
     init    <project-name>              Bootstrap a new project
     add     <name>                      Add a module (monolith) or feature (microservice)
     generate <artefact> <name>          Generate a single artefact
+    g <artefact> <name>
     info                                Show project type, modules, features
 
   Generate artefacts:
@@ -38,15 +39,15 @@ const HELP = `
   Flags (init):
     --type   modular-monolith | microservice   (prompted if omitted)
     --lang   js | ts                           (default: js)
-    --port   HTTP port                          (default: 3000)
+    --port   HTTP port                         (default: 3000)
 
   Examples:
     hexpress init my-app
     hexpress init my-app --lang ts
     hexpress init user-service --type microservice --lang ts
     hexpress add order
-    hexpress generate feature payment
-    hexpress generate entity Invoice
+    hexpress g feature payment
+    hexpress g entity Invoice
     hexpress info
 `;
 
@@ -54,6 +55,7 @@ switch (command) {
   case 'init': initProject(rest); break;
   case 'add': addCommand(rest); break;
   case 'generate': generateCommand(rest); break;
+  case 'g': generateCommand(rest); break;
   case 'info': infoCommand(); break;
   default: console.log(HELP);
 }

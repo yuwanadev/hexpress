@@ -14,14 +14,14 @@ function genController(name) {
  * Implements no business logic — delegates entirely to the use-case (port).
  *
  * Usage (in wiring):
- *   const ctrl = new ${Name}Controller({ ${camel(name)}UseCase });
+ *   const ctrl = new ${Name}Controller(${camel(name)}UseCase);
  *   ctrl.registerRoutes(router);
  */
 export class ${Name}Controller {
   /**
-   * @param {{ ${camel(name)}UseCase: ${Name}Port }} deps
+   * @param {${Name}Port} ${camel(name)}UseCase
    */
-  constructor({ ${camel(name)}UseCase }) {
+  constructor(${camel(name)}UseCase) {
     this.useCase = ${camel(name)}UseCase;
   }
 
@@ -46,28 +46,28 @@ export class ${Name}Controller {
   async #create(req, res, next) {
     try {
       const result = await this.useCase.create(req.body);
-      res.status(201).json({ data: result });
+      res.ApiResponse(result, 201);
     } catch (err) { next(err); }
   }
 
   async #findAll(req, res, next) {
     try {
       const result = await this.useCase.findAll();
-      res.status(200).json({ data: result });
+      res.ApiResponse(result);
     } catch (err) { next(err); }
   }
 
   async #findById(req, res, next) {
     try {
       const result = await this.useCase.findById(req.params.id);
-      res.status(200).json({ data: result });
+      res.ApiResponse(result);
     } catch (err) { next(err); }
   }
 
   async #update(req, res, next) {
     try {
       const result = await this.useCase.update(req.params.id, req.body);
-      res.status(200).json({ data: result });
+      res.ApiResponse(result);
     } catch (err) { next(err); }
   }
 

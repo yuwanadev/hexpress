@@ -2,43 +2,45 @@
 
 const { pascal } = require('../../utils/names');
 
-function genRepository(name) {
+function genRepository(type, name) {
   const Name = pascal(name);
-  return `import type { I${Name}DatabasePort } from '../../../../application/ports/outbound/${Name}DatabasePort.js';
-import { ${Name} }                    from '../../../../domain/entities/${Name}.js';
+  const table = `${name.toLowerCase()}s`;
+  return `import type { Pool } from 'pg';
+import type { I${Name}DatabasePort } from '../../../../application/ports/outbound/${Name}DatabasePort';
+import { ${Name} } from '../../../../domain/entities/${Name}';
+import { AppError } from '${type === 'modular-monolith' ? '../../../../../../' : '../../../../'}shared/infrastructure/http/AppError';
 
 /**
  * ${Name}Repository — Outbound Persistence Adapter
  *
  * Implements I${Name}DatabasePort.
+ * Uses pg Pool for raw SQL queries.
  * Uses ${Name}.toDomain() and entity.toPersistence() for mapping.
- * Swap the ORM/driver here without touching any other layer.
+ * Swap the driver here without touching any other layer.
  */
 export class ${Name}Repository implements I${Name}DatabasePort {
-  private readonly model: any;
-
-  constructor({ model }: { model: any }) {
-    this.model = model;
-  }
+  constructor(private readonly pool: Pool) {}
 
   async findById(id: string): Promise<${Name} | null> {
-    const record = await this.model.findOne({ where: { id } });
-    if (!record) return null;
-    return ${Name}.toDomain(record);
+    try {
+      const { rows } = await this.pool.query(
+        'SELECT * FROM ${table} WHERE id = $1 LIMIT 1',
+        [id],
+      );
+      if (!rows[0]) return null;
+      return ${Name}.toDomain(rows[0]);
+    } catch (err) {
+      throw new AppError((err as Error).message, 500);
+    }
   }
 
   async findAll(): Promise<${Name}[]> {
-    const records = await this.model.findAll();
-    return records.map((r: any) => ${Name}.toDomain(r));
-  }
-
-  async save(entity: ${Name}): Promise<void> {
-    const data = entity.toPersistence();
-    await this.model.upsert(data);
-  }
-
-  async delete(id: string): Promise<void> {
-    await this.model.destroy({ where: { id } });
+    try {
+      const { rows } = await this.pool.query('SELECT * FROM ${table}');
+      return rows.map((r) => ${Name}.toDomain(r));
+    } catch (err) {
+      throw new AppError((err as Error).message, 500);
+    }
   }
 }
 `;

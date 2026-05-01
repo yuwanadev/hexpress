@@ -109,9 +109,9 @@ function generateFeature(root, config, featureName, flags = {}) {
   writeFile(p.dto, gen.genDTO(featureName), p.rel(p.dto));
   writeFile(p.inboundPort, gen.genInboundPort(featureName), p.rel(p.inboundPort));
   writeFile(p.outboundPort, gen.genOutboundPort(featureName), p.rel(p.outboundPort));
-  writeFile(p.useCase, gen.genUseCase(featureName), p.rel(p.useCase));
+  writeFile(p.useCase, gen.genUseCase(type, featureName), p.rel(p.useCase));
   writeFile(p.controller, gen.genController(featureName), p.rel(p.controller));
-  writeFile(p.repository, gen.genRepository(featureName), p.rel(p.repository));
+  writeFile(p.repository, gen.genRepository(type, featureName), p.rel(p.repository));
   writeFile(p.wiring, gen.genWiring(featureName, type), p.rel(p.wiring));
 
   registerFeature(root, config, kebab(featureName));
@@ -159,7 +159,7 @@ function generateUseCase(root, config, scope, name) {
   const gen = resolveGenerators(lang);
 
   const p = resolvePaths(root, config.type, scope, name);
-  writeFile(p.useCase, gen.genUseCase(name), p.rel(p.useCase));
+  writeFile(p.useCase, gen.genUseCase(config.type, name), p.rel(p.useCase));
 
   log.blank();
   log.success(`UseCase "${pascal(name)}UseCase" created.`);

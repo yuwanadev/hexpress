@@ -1,7 +1,7 @@
 'use strict';
 
 function genSharedAggregateRoot() {
-  return `import { Entity } from './Entity.js';
+  return `import { Entity } from './Entity';
 
 export interface DomainEvent {
   eventName: string;

@@ -13,8 +13,8 @@ function genEntity(name) {
 
 export interface ${Name}Props {
   id: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ${Name}Persistence {

@@ -1,16 +1,25 @@
 'use strict';
 
 function genIndexJs(port = 3000) {
-  return `import { app } from './src/app.js';
+  return `import { App } from './src/app.js';
+import { closePool } from './src/config/database.js';
 
-const PORT = process.env.PORT ?? ${port};
-
-const server = app.listen(PORT, () => {
-  console.log(\`[Server] Listening on port \${PORT}\`);
+process.on('uncaughtException', (error) => {
+  console.error('[Server] Uncaught Exception:', error);
+  process.exit(1);
 });
 
+process.on('unhandledRejection', (reason) => {
+  console.error('[Server] Unhandled Rejection:', reason);
+  process.exit(1);
+});
+
+const app = new App();
+const server = app.listen();
+
 process.on('SIGTERM', () => {
-  server.close(() => {
+  server.close(async () => {
+    await closePool();
     console.log('[Server] Gracefully shut down');
     process.exit(0);
   });

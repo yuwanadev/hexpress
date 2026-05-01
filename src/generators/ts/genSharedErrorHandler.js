@@ -2,21 +2,28 @@
 
 function genSharedErrorHandler() {
   return `import type { Request, Response, NextFunction } from 'express';
-
-interface DomainError extends Error {
-  statusCode?: number;
-}
+import { AppError } from './AppError';
 
 /**
  * errorHandler — Express error middleware.
- * Maps domain errors (with statusCode) to HTTP responses.
+ * Catches AppError instances and returns a consistent JSON response.
+ * Unknown errors are logged and returned as 500.
  */
-export function errorHandler(err: DomainError, req: Request, res: Response, next: NextFunction): void {
-  const status  = err.statusCode ?? 500;
-  const message = status < 500 ? err.message : 'Internal Server Error';
-  if (status >= 500) console.error('[ERROR]', err);
-  res.status(status).json({ error: { name: err.name, message } });
-}
+export const errorHandler = (err: unknown, req: Request, res: Response, next: NextFunction): void => {
+  if (err instanceof AppError) {
+    res.status(err.statusCode).json({
+      success: false,
+      message: err.message,
+    });
+    return;
+  }
+
+  console.error('[Unhandled Error]', err);
+  res.status(500).json({
+    success: false,
+    message: 'Internal server error',
+  });
+};
 `;
 }
 
