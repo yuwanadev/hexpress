@@ -28,10 +28,10 @@ export class ${Name} {
   public createdAt?: Date;
   public updatedAt?: Date;
 
-  constructor({ id, createdAt, updatedAt }: ${Name}Props) {
-    this.id        = id;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
+  constructor(props: ${Name}Props) {
+    this.id        = props.id;
+    this.createdAt = props.createdAt;
+    this.updatedAt = props.updatedAt;
   }
 
   // ── Mapper ────────────────────────────────────────────────────────────────
