@@ -92,15 +92,14 @@ async function initProject(argv) {
   };
 
   const shared = {
-    ...(type == 'microservice' ? {
-      'domain/': {
-        [`Entity.${ext}`]: gen.genSharedEntity(),
-        [`AggregateRoot.${ext}`]: gen.genSharedAggregateRoot(),
-      },
-      'application/': {
-        [`EventBus.${ext}`]: gen.genSharedEventBus(),
-      },
-    } : {}),
+    'domain/': {
+      [`Entity.${ext}`]: gen.genSharedEntity(),
+      [`AggregateRoot.${ext}`]: gen.genSharedAggregateRoot(),
+    },
+    'application/': {
+      [`EventBus.${ext}`]: gen.genSharedEventBus(),
+      [`MockPort.${ext}`]: gen.genMockPort(),
+    },
     'infrastructure/': sharedInfra,
     'constants/': {
       '.gitkeep': '',

@@ -2,10 +2,42 @@
 
 const { pascal, camel } = require('../../utils/names');
 
-function genUseCase(type, name, { databasePort = false } = {}) {
+function genUseCase(type, name, { databasePort = false, minimal = false, mockPort = true } = {}) {
   const Name = pascal(name);
   const Suffix = databasePort ? 'DatabasePort' : 'OutboundPort';
   const varDb = `${camel(name)}Db`;
+
+  if (minimal && mockPort) {
+    const sharedPath = type === 'modular-monolith' ? '../../../../shared' : '../../shared';
+    return `import { IMockPort } from '${sharedPath}/application/MockPort';
+
+/**
+ * ${Name}UseCase — Application Use Case
+ */
+export class ${Name}UseCase implements IMockPort {
+  constructor() {
+    // TODO: inject dependencies
+  }
+}
+`;
+  }
+
+  if (minimal && !mockPort) {
+    return `import type { I${Name}Port } from '../ports/inbound/${Name}Port';
+
+/**
+ * ${Name}UseCase — Application Use Case
+ *
+ * Implements I${Name}Port (inbound).
+ */
+export class ${Name}UseCase implements I${Name}Port {
+  constructor() {
+    // TODO: inject dependencies
+  }
+}
+`;
+  }
+
   return `import type { I${Name}Port } from '../ports/inbound/${Name}Port';
 import type { ${Name}ResponseDTO } from '../ports/dtos/${Name}DTO';
 import { to${Name}ResponseDTO } from '../ports/dtos/${Name}DTO';

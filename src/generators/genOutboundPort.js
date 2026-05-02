@@ -2,10 +2,26 @@
 
 const { pascal } = require('../utils/names');
 
-function genOutboundPort(name, { databasePort = false } = {}) {
-  const Name   = pascal(name);
+function genOutboundPort(type, name, { databasePort = false, minimal = false } = {}) {
+  const Name = pascal(name);
   const Suffix = databasePort ? 'DatabasePort' : 'OutboundPort';
   const Entity = Name; // entity name mirrors feature name
+
+  if (minimal) {
+    return `/**
+ * ${Name}${Suffix} — Outbound Port
+ *
+ * Defines what this feature needs from the persistence layer.
+ * Repository adapters MUST implement this contract.
+ *
+ * @interface
+ */
+export class ${Name}${Suffix} {
+  // TODO: define outbound contract
+}
+`;
+  }
+
   return `/**
  * ${Name}${Suffix} — Outbound Port
  *
@@ -17,21 +33,21 @@ function genOutboundPort(name, { databasePort = false } = {}) {
 export class ${Name}${Suffix} {
   /**
    * @param {string} id
-   * @returns {Promise<import('../../entities/${Entity}.js').${Entity}|null>}
+   * @returns {Promise<import('../../../domain/entities/${Entity}.js').${Entity}|null>}
    */
   async findById(id) {
     throw new Error('${Name}${Suffix}.findById() not implemented');
   }
 
   /**
-   * @returns {Promise<import('../../entities/${Entity}.js').${Entity}[]>}
+   * @returns {Promise<import('../../../domain/entities/${Entity}.js').${Entity}[]>}
    */
   async findAll() {
     throw new Error('${Name}${Suffix}.findAll() not implemented');
   }
 
   /**
-   * @param {import('../../entities/${Entity}.js').${Entity}} entity
+   * @param {import('../../../domain/entities/${Entity}.js').${Entity}} entity
    * @returns {Promise<void>}
    */
   async save(entity) {

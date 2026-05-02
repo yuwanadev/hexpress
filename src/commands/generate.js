@@ -1,3 +1,4 @@
+const fs = require('fs');
 const { prompt, confirm } = require('../utils/prompts');
 const { registerModule, findProject, detectCurrentModule, registerFeature } = require('../utils/context');
 const { scaffold, writeFile } = require('../utils/scaffold');
@@ -58,6 +59,7 @@ async function generateCommand(argv) {
   }
 
   const { root, config } = project;
+  ensureSharedAssets(root, config);
 
   // For monolith: detect or ask which module scope we are in
   let scope = detectCurrentModule(root, config);
@@ -210,10 +212,10 @@ async function generateFeature(root, config, scope, featureName, flags = {}) {
 
   writeFile(p.entity, gen.genEntity(featureName), p.rel(p.entity));
   writeFile(p.dto, gen.genDTO(featureName), p.rel(p.dto));
-  writeFile(p.inboundPort, gen.genInboundPort(featureName), p.rel(p.inboundPort));
-  writeFile(p.outboundPort, gen.genOutboundPort(featureName, { databasePort: true }), p.rel(p.outboundPort));
+  writeFile(p.inboundPort, gen.genInboundPort(type, featureName), p.rel(p.inboundPort));
+  writeFile(p.outboundPort, gen.genOutboundPort(type, featureName, { databasePort: true }), p.rel(p.outboundPort));
   writeFile(p.useCase, gen.genUseCase(type, featureName, { databasePort: true }), p.rel(p.useCase));
-  writeFile(p.controller, gen.genController(featureName), p.rel(p.controller));
+  writeFile(p.controller, gen.genController(type, featureName), p.rel(p.controller));
   writeFile(p.repository, gen.genRepository(type, featureName, { databasePort: true }), p.rel(p.repository));
   writeFile(p.wiring, gen.genWiring(featureName, type), p.rel(p.wiring));
 
@@ -254,11 +256,13 @@ async function generateUseCase(root, config, scope, name) {
   const p = resolvePaths(root, config.type, scope, name);
 
   // UseCase depends on: Port, DTO, OutboundPort, Entity
+  let hasInbound = false;
   if (await confirm('Does it need a new Inbound Port?', true)) {
-    writeFile(p.inboundPort, gen.genInboundPort(name), p.rel(p.inboundPort));
+    writeFile(p.inboundPort, gen.genInboundPort(config.type, name, { minimal: true }), p.rel(p.inboundPort));
+    hasInbound = true;
   }
   if (await confirm('Does it need a new Outbound Port?', true)) {
-    writeFile(p.outboundPort, gen.genOutboundPort(name), p.rel(p.outboundPort));
+    writeFile(p.outboundPort, gen.genOutboundPort(config.type, name, { minimal: true }), p.rel(p.outboundPort));
   }
   if (await confirm('Does it need a new DTO?', true)) {
     writeFile(p.dto, gen.genDTO(name), p.rel(p.dto));
@@ -267,7 +271,7 @@ async function generateUseCase(root, config, scope, name) {
     writeFile(p.entity, gen.genEntity(name), p.rel(p.entity));
   }
 
-  writeFile(p.useCase, gen.genUseCase(config.type, name), p.rel(p.useCase));
+  writeFile(p.useCase, gen.genUseCase(config.type, name, { minimal: true, mockPort: !hasInbound }), p.rel(p.useCase));
 
   log.blank();
   log.success(`UseCase "${pascal(name)}UseCase" created.`);
@@ -284,10 +288,10 @@ async function generatePort(root, config, scope, name) {
   const p = resolvePaths(root, config.type, scope, name);
 
   if (await confirm('Generate Inbound Port?', true)) {
-    writeFile(p.inboundPort, gen.genInboundPort(name), p.rel(p.inboundPort));
+    writeFile(p.inboundPort, gen.genInboundPort(config.type, name, { minimal: true }), p.rel(p.inboundPort));
   }
   if (await confirm('Generate Outbound Port?', true)) {
-    writeFile(p.outboundPort, gen.genOutboundPort(name), p.rel(p.outboundPort));
+    writeFile(p.outboundPort, gen.genOutboundPort(config.type, name, { minimal: true }), p.rel(p.outboundPort));
   }
   if (await confirm('Generate DTO?', true)) {
     writeFile(p.dto, gen.genDTO(name), p.rel(p.dto));
@@ -307,11 +311,13 @@ async function generateController(root, config, scope, name) {
   const gen = resolveGenerators(lang);
   const p = resolvePaths(root, config.type, scope, name);
 
+  let hasInbound = false;
   if (await confirm('Does it need a new Inbound Port?', true)) {
-    writeFile(p.inboundPort, gen.genInboundPort(name), p.rel(p.inboundPort));
+    writeFile(p.inboundPort, gen.genInboundPort(config.type, name, { minimal: true }), p.rel(p.inboundPort));
+    hasInbound = true;
   }
 
-  writeFile(p.controller, gen.genController(name), p.rel(p.controller));
+  writeFile(p.controller, gen.genController(config.type, name, { minimal: true, mockPort: !hasInbound }), p.rel(p.controller));
 
   log.blank();
   log.success(`Controller "${pascal(name)}Controller" created.`);
@@ -329,15 +335,17 @@ async function generateRepository(root, config, scope, name) {
   const gen = resolveGenerators(lang);
   const p = resolvePaths(root, config.type, scope, name, { outboundAdapter: adapterFolder });
 
+  let hasOutbound = false;
   if (await confirm('Does it need a new Outbound Port?', true)) {
-    writeFile(p.outboundPort, gen.genOutboundPort(name), p.rel(p.outboundPort));
+    writeFile(p.outboundPort, gen.genOutboundPort(config.type, name, { minimal: true }), p.rel(p.outboundPort));
+    hasOutbound = true;
   }
 
   if (await confirm('Does it need a new Entity?', true)) {
     writeFile(p.entity, gen.genEntity(name), p.rel(p.entity));
   }
 
-  writeFile(p.repository, gen.genRepository(config.type, name), p.rel(p.repository));
+  writeFile(p.repository, gen.genRepository(config.type, name, { minimal: true, mockPort: !hasOutbound }), p.rel(p.repository));
 
   log.blank();
   log.success(`Repository "${pascal(name)}Repository" created in ${adapterFolder}.`);
@@ -353,7 +361,7 @@ async function generateWiring(root, config, scope, name) {
   const gen = resolveGenerators(lang);
   const p = resolvePaths(root, config.type, scope, name);
 
-  writeFile(p.wiring, gen.genWiring(name, config.type), p.rel(p.wiring));
+  writeFile(p.wiring, gen.genWiring(name, config.type, { minimal: true }), p.rel(p.wiring));
 
   log.blank();
   log.success(`Wiring for "${pascal(name)}" created.`);
@@ -410,6 +418,38 @@ async function generateError(root, config, scope, name) {
   log.blank();
   log.success(`Domain error "${errName}" created.`);
   log.blank();
+}
+
+function ensureSharedAssets(root, config) {
+  const lang = config.lang ?? 'js';
+  const ext = lang === 'ts' ? 'ts' : 'js';
+  const gen = resolveGenerators(lang);
+  const sharedBase = path.join(root, 'src', 'shared');
+
+  const assets = [
+    { dir: 'domain', name: `Entity.${ext}`, content: gen.genSharedEntity() },
+    { dir: 'domain', name: `AggregateRoot.${ext}`, content: gen.genSharedAggregateRoot() },
+    { dir: 'application', name: `EventBus.${ext}`, content: gen.genSharedEventBus() },
+    { dir: 'application', name: `MockPort.${ext}`, content: gen.genMockPort() },
+  ];
+
+  let added = false;
+  for (const asset of assets) {
+    const fullPath = path.join(sharedBase, asset.dir, asset.name);
+    if (!fs.existsSync(fullPath)) {
+      if (!added) {
+        log.blank();
+        log.dim('Ensuring shared base files exist...');
+        log.blank();
+        added = true;
+      }
+      fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+      fs.writeFileSync(fullPath, asset.content, 'utf8');
+      log.blank();
+      log.file(path.relative(root, fullPath));
+      log.blank();
+    }
+  }
 }
 
 module.exports = { generateCommand, generateFeature };

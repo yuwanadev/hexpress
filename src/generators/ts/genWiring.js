@@ -2,9 +2,22 @@
 
 const { pascal, camel } = require('../../utils/names');
 
-function genWiring(name, type) {
+function genWiring(name, type, { minimal = false } = {}) {
   const Name = pascal(name);
   const var_ = camel(name);
+
+  if (minimal) {
+    return `import type { Router } from 'express';
+import type { Pool } from 'pg';
+
+/**
+ * compose${Name}${type === 'modular-monolith' ? 'Module' : ''} — Dependency Injection Wiring
+ */
+export function compose${Name}${type === 'modular-monolith' ? 'Module' : ''}({ pool, router }: { pool: Pool, router: Router }) {
+  // TODO: compose dependencies
+}
+`;
+  }
 
   if (type === 'microservice') {
     return `import type { Router } from 'express';

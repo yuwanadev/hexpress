@@ -2,9 +2,19 @@
 
 const { pascal, camel } = require('../utils/names');
 
-function genWiring(name, type) {
+function genWiring(name, type, { minimal = false } = {}) {
   const Name = pascal(name);
   const var_ = camel(name);
+
+  if (minimal) {
+    return `/**
+ * compose${Name}${type === 'modular-monolith' ? 'Module' : ''} — Dependency Injection Wiring
+ */
+export function compose${Name}${type === 'modular-monolith' ? 'Module' : ''}({ pool, router }) {
+  // TODO: compose dependencies
+}
+`;
+  }
 
   if (type === 'microservice') {
     return `import { ${Name}UseCase }    from './application/use-cases/${Name}UseCase.js';

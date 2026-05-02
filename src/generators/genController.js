@@ -2,9 +2,49 @@
 
 const { pascal, camel, kebab } = require('../utils/names');
 
-function genController(name) {
+function genController(type, name, { minimal = false, mockPort = true } = {}) {
   const Name = pascal(name);
   const route = kebab(name);
+  const varUseCase = `${camel(name)}UseCase`;
+
+  if (minimal && mockPort) {
+    return `/**
+ * ${Name}Controller — Inbound HTTP Adapter
+ */
+export class ${Name}Controller {
+  constructor(${varUseCase}) {
+    this.useCase = ${varUseCase};
+    this.prefix = "/${route}s";
+  }
+
+  registerRoutes(router) {
+    // router.use(this.prefix, router);
+    // TODO: register routes
+  }
+}
+`;
+  }
+
+  if (minimal && !mockPort) {
+    return `import { ${Name}Port } from '../../../../application/ports/inbound/${Name}Port.js';
+
+/**
+ * ${Name}Controller — Inbound HTTP Adapter
+ */
+export class ${Name}Controller {
+  constructor(${varUseCase}) {
+    this.useCase = ${varUseCase};
+    this.prefix = "/${route}s";
+  }
+
+  registerRoutes(router) {
+    // router.use(this.prefix, router);
+    // TODO: register routes
+  }
+}
+`;
+  }
+
   return `import { ${Name}Port } from '../../../../application/ports/inbound/${Name}Port.js';
 
 /**
@@ -14,15 +54,15 @@ function genController(name) {
  * Implements no business logic — delegates entirely to the use-case (port).
  *
  * Usage (in wiring):
- *   const ctrl = new ${Name}Controller(${camel(name)}UseCase);
+ *   const ctrl = new ${Name}Controller(${varUseCase});
  *   ctrl.registerRoutes(router);
  */
 export class ${Name}Controller {
   /**
-   * @param {${Name}Port} ${camel(name)}UseCase
+   * @param {${Name}Port} ${varUseCase}
    */
-  constructor(${camel(name)}UseCase) {
-    this.useCase = ${camel(name)}UseCase;
+  constructor(${varUseCase}) {
+    this.useCase = ${varUseCase};
     this.prefix = "/${route}s";
   }
 

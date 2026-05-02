@@ -2,13 +2,48 @@
 
 const { pascal, camel } = require('../utils/names');
 
-function genUseCase(type, name, { databasePort = false } = {}) {
+function genUseCase(type, name, { databasePort = false, minimal = false, mockPort = true } = {}) {
   const Name = pascal(name);
   const Suffix = databasePort ? 'DatabasePort' : 'OutboundPort';
   const varDb = `${camel(name)}Db`;
+
+  if (minimal && mockPort) {
+    const sharedPath = type === 'modular-monolith' ? '../../../../shared' : '../../shared';
+    return `import { MockPort } from '${sharedPath}/application/MockPort.js';
+
+/**
+ * ${Name}UseCase — Application Use Case
+ */
+export class ${Name}UseCase extends MockPort {
+  constructor() {
+    super();
+    // TODO: inject dependencies
+  }
+}
+`;
+  }
+
+  if (minimal && !mockPort) {
+    return `import { ${Name}Port } from '../ports/inbound/${Name}Port.js';
+
+/**
+ * ${Name}UseCase — Application Use Case
+ *
+ * Implements ${Name}Port (inbound).
+ */
+export class ${Name}UseCase extends ${Name}Port {
+  constructor() {
+    super();
+    // TODO: inject dependencies
+  }
+}
+`;
+  }
+
   return `import { ${Name}Port }         from '../ports/inbound/${Name}Port.js';
 import { ${Name}ResponseDTO }  from '../ports/dtos/${Name}DTO.js';
 import { ${Name} }             from '../../domain/entities/${Name}.js';
+import { AppError }          from '${type === 'modular-monolith' ? '../../../../' : '../../'}shared/infrastructure/http/AppError.js';
 
 /**
  * ${Name}UseCase — Application Use Case
@@ -69,7 +104,7 @@ export class ${Name}UseCase extends ${Name}Port {
 
   async #findOrFail(id) {
     const entity = await this.db.findById(id);
-    if (!entity) throw Object.assign(new Error('${Name} not found: ' + id), { statusCode: 404 });
+    if (!entity) throw new AppError('${Name} not found: ' + id, 404);
     return entity;
   }
 }

@@ -2,10 +2,40 @@
 
 const { pascal } = require('../../utils/names');
 
-function genRepository(type, name, { databasePort = false } = {}) {
+function genRepository(type, name, { databasePort = false, minimal = false, mockPort = true } = {}) {
   const Name = pascal(name);
   const Suffix = databasePort ? 'DatabasePort' : 'OutboundPort';
   const table = `${name.toLowerCase()}s`;
+
+  if (minimal && mockPort) {
+    const sharedPath = type === 'modular-monolith' ? '../../../../../../shared' : '../../../../shared';
+    return `import type { Pool } from 'pg';
+import { IMockPort } from '${sharedPath}/application/MockPort';
+
+/**
+ * ${Name}Repository — Outbound Persistence Adapter
+ */
+export class ${Name}Repository implements IMockPort {
+  constructor(private readonly pool: Pool) {}
+}
+`;
+  }
+
+  if (minimal && !mockPort) {
+    return `import type { Pool } from 'pg';
+import type { I${Name}${Suffix} } from '../../../../application/ports/outbound/${Name}${Suffix}';
+
+/**
+ * ${Name}Repository — Outbound Persistence Adapter
+ *
+ * Implements I${Name}${Suffix}.
+ */
+export class ${Name}Repository implements I${Name}${Suffix} {
+  constructor(private readonly pool: Pool) {}
+}
+`;
+  }
+
   return `import type { Pool } from 'pg';
 import type { I${Name}${Suffix} } from '../../../../application/ports/outbound/${Name}${Suffix}';
 import { ${Name} } from '../../../../domain/entities/${Name}';
