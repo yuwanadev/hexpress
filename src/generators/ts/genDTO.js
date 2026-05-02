@@ -27,7 +27,12 @@ export interface ${Name}ResponseDTO {
  * Build a ${Name}ResponseDTO from a domain entity.
  */
 export function to${Name}ResponseDTO(entity: { toJSON(): ${Name}ResponseDTO }): ${Name}ResponseDTO {
-  return entity.toJSON();
+  const json = entity.toJSON();
+  return {
+    id: json.id,
+    createdAt: json.createdAt,
+    updatedAt: json.updatedAt,
+  };
 }
 
 /**
