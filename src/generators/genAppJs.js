@@ -6,8 +6,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { errorHandler } from './shared/infrastructure/http/errorHandler.js';
 import { responseHandler } from './shared/infrastructure/http/responseHandler.js';
+import { registerModules } from './shared/infrastructure/di/ctn.js';
 import config from './config/index.js';
-// import { compose${type === 'modular-monolith' ? 'ExampleModule' : 'Example'} } from '${type === 'modular-monolith' ? './modules/example/example.module' : './wiring'}.js';
 
 export class App {
   constructor() {
@@ -41,12 +41,8 @@ export class App {
     this.app.use(responseHandler);
 
     this.app.use('/api', this.router);
-    this.registerModules();
+    registerModules(this.router);
     this.app.use(errorHandler);
-  }
-
-  registerModules() {
-    // compose${type === 'modular-monolith' ? 'ExampleModule' : 'Example'}({ pool, router: this.router });
   }
 
   listen() {

@@ -14,6 +14,43 @@ function genConfig(port = 3000, type = 'modular-monolith') {
 
 const env = process.env;
 
+/**
+ * @typedef {Object} DbPoolConfig
+ * @property {number} min
+ * @property {number} max
+ * @property {number} idleTimeoutMillis
+ * @property {number} connectionTimeoutMillis
+ */
+
+/**
+ * @typedef {Object} DbConfig
+ * @property {string} host
+ * @property {number} port
+ * @property {string} database
+ * @property {string} user
+ * @property {string} password
+ * @property {DbPoolConfig} pool
+ */
+
+/**
+ * @typedef {Object} ClientConfig
+ * @property {string} [username]
+ * @property {string} [password]
+ * @property {string} [secret]
+ * @property {string} [url]
+ * @property {number} [port]
+ * @property {number} [timeout]
+ */
+
+/**
+ * @typedef {Object} AppConfig
+ * @property {string} env
+ * @property {number} port
+ * @property {string} logLevel
+ * @property {DbConfig} db${type === 'microservice' ? '\n * @property {{ brokers: string[], clientId: string }} kafka' : ''}
+ */
+
+/** @type {AppConfig} */
 const config = Object.freeze({
   env: env.NODE_ENV ?? 'development',
   port: parseInt(env.PORT ?? '${port}', 10),

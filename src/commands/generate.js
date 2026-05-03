@@ -26,15 +26,15 @@ async function generateCommand(argv) {
   if (!artefact) {
     artefact = await prompt(
       'What do you want to generate?\n' +
-      '[1] feature (full stack)\n' +
-      '[2] entity\n' +
-      '[3] usecase\n' +
-      '[4] port\n' +
-      '[5] controller\n' +
-      '[6] repository\n' +
-      '[7] wiring\n' +
-      '[8] dto\n' +
-      '[9] event\n' +
+      '[1]  feature (full stack)\n' +
+      '[2]  entity\n' +
+      '[3]  usecase\n' +
+      '[4]  port\n' +
+      '[5]  controller\n' +
+      '[6]  repository\n' +
+      '[7]  wiring\n' +
+      '[8]  dto\n' +
+      '[9]  event\n' +
       '[10] error\n' +
       '[11] middleware\n> ',
       (ans) => {

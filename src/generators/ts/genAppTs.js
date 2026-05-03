@@ -4,10 +4,10 @@ function genAppTs(type) {
   return `import express, { Application, Router } from "express";
 import { errorHandler } from "./shared/infrastructure/http/errorHandler";
 import { responseHandler } from "./shared/infrastructure/http/responseHandler";
+import { registerModules } from "./shared/infrastructure/di/ctn";
 import config from "./config/index";
 import cors from "cors";
 import helmet from "helmet";
-// import { compose${type === 'modular-monolith' ? 'ExampleModule' : 'Example'} } from '${type === 'modular-monolith' ? './modules/example/example.module' : './wiring'}';
 
 export class App {
   private readonly app: Application;
@@ -44,12 +44,8 @@ export class App {
     this.app.use(responseHandler);
 
     this.app.use("/api", this.router);
-    this.registerModules();
+    registerModules(this.router);
     this.app.use(errorHandler);
-  }
-
-  private registerModules(): void {
-    // compose${type === 'modular-monolith' ? 'ExampleModule' : 'Example'}({ pool, router });
   }
 
   public listen() {

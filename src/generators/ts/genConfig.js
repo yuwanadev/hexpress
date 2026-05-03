@@ -30,6 +30,15 @@ export interface DbConfig {
   pool: DbPoolConfig;
 }
 
+export interface ClientConfig {
+  url?: string;
+  port?: number;
+  timeout?: number;
+  username?: string;
+  password?: string;
+  secret?: string;
+}
+
 export interface AppConfig {
   env: string;
   port: number;

@@ -22,20 +22,21 @@ const [, , command, ...rest] = process.argv;
 
 const HELP = `
   Commands:
-    init    <project-name>              Bootstrap a new project
-    add     <name>                      Add a module (monolith) or feature (microservice)
-    generate <artefact> <name>          Generate a single artefact
-    g <artefact> <name>
-    info                                Show project type, modules, features
+    init      <project-name>              Bootstrap a new project
+    add       <name>                      Add a module (monolith) or feature (microservice)
+    generate  <artefact> <name>           Generate a single artefact
+    g         <artefact> <name>
+    info                                  Show project type, modules, features
 
   Generate artefacts:
-    entity    <Name>    — domain/Entity.{ts|js}
-    usecase   <Name>    — application/use-cases/NameUseCase.{ts|js}
-    port      <Name>    — application/ports/inbound|outbound/NamePort.{ts|js}
-    event     <Name>    — domain/events/NameEvent.{ts|js}
-    error     <Name>    — domain/errors/NameError.{ts|js}
-    middleware <Name>   — shared/middlewares/NameMiddleware.{ts|js}
-    feature   <Name>    — Full stack: port → usecase → controller+route → repository
+    entity        <Name>    — domain/Entity.{ts|js}
+    usecase       <Name>    — application/use-cases/NameUseCase.{ts|js}
+    port          <Name>    — application/ports/inbound|outbound/NamePort.{ts|js}
+    event         <Name>    — domain/events/NameEvent.{ts|js}
+    error         <Name>    — domain/errors/NameError.{ts|js}
+    middleware    <Name>    — shared/middlewares/NameMiddleware.{ts|js}
+    dto           <Name>    — dto/NameDTO.{ts|js}
+    feature | f   <Name>    — Full stack: port → usecase → controller+route → repository
 
   Flags (init):
     --type   modular-monolith | microservice   (prompted if omitted)
@@ -47,27 +48,27 @@ const HELP = `
     hexpress init my-app --lang ts
     hexpress init user-service --type microservice --lang ts
     hexpress add order
-    hexpress g feature payment
+    hexpress g f payment
     hexpress g entity Invoice
     hexpress info
 `;
 
 async function main() {
   switch (command) {
-    case 'init': 
-      await initProject(rest); 
+    case 'init':
+      await initProject(rest);
       break;
-    case 'add': 
-      addCommand(rest); 
+    case 'add':
+      addCommand(rest);
       break;
     case 'generate':
-    case 'g': 
-      await generateCommand(rest); 
+    case 'g':
+      await generateCommand(rest);
       break;
-    case 'info': 
-      infoCommand(); 
+    case 'info':
+      infoCommand();
       break;
-    default: 
+    default:
       console.log(HELP);
   }
 }

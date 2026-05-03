@@ -89,6 +89,9 @@ async function initProject(argv) {
       [`errorHandler.${ext}`]: gen.genSharedErrorHandler(),
       [`responseHandler.${ext}`]: gen.genResponseHandler(),
     },
+    'di/': {
+      [`ctn.${ext}`]: gen.genCtn(type),
+    },
   };
 
   const shared = {

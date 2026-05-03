@@ -30,6 +30,7 @@ const { genConfig }              = require('./genConfig');
 const { genDatabase }            = require('./genDatabase');
 const { genMiddleware }          = require('./genMiddleware');
 const { genMockPort }            = require('./genMockPort');
+const { genCtn }                 = require('./genCtn');
 
 module.exports = {
   genEntity,
@@ -62,4 +63,5 @@ module.exports = {
   genDatabase,
   genMiddleware,
   genMockPort,
+  genCtn,
 };
