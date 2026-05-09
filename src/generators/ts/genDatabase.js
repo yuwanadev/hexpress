@@ -48,8 +48,12 @@ export async function connectDatabase(config: AppConfig): Promise<void> {
     console.error('[DB Pool] Unexpected error on idle client', err);
   });
 
-  await pool.query('SELECT 1');
-  console.log('[Database] Connected');
+  try {
+    await pool.query('SELECT 1');
+    console.log(\`[Database] Connected\`);
+  } catch (err) {
+    throw new Error(\`[Database] Connection failed for \${err}\`);
+  }
 }
 
 /**

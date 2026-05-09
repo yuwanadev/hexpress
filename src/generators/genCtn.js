@@ -1,7 +1,7 @@
 'use strict';
 
 function genCtn(type) {
-  return `import pool from '../../../config/database.js';
+  return `import { pool } from '../../../config/database.js';
 
 /**
  * registerModules
