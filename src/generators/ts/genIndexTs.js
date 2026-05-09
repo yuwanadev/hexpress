@@ -22,10 +22,12 @@ process.on("unhandledRejection", (reason: unknown) => {
 
 async function bootstrap() {
   // ── Connect Infrastructure before accepting traffic ───────────────────────────
-  await Promise.all([
-    connectDatabase(config),
-    connectRedis(config),
-  ]);
+  await connectDatabase(config);
+  
+  // Connect Redis in background (optional)
+  connectRedis(config).catch((err) => {
+    console.error("[Redis] Background connection failed:", err.message);
+  });
 
   const app = new App(config);
   const server = app.listen();

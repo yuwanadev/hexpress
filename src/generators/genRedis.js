@@ -25,6 +25,7 @@ export async function connectRedis(config) {
   });
 
   client.on('error', (err) => {
+    if (err.code === 'ECONNREFUSED') return;
     console.error('[Redis] Client error', err);
   });
 
@@ -36,8 +37,12 @@ export async function connectRedis(config) {
     console.warn('[Redis] Reconnecting...');
   });
 
-  if (!client.isOpen) {
-    await client.connect();
+  try {
+    if (!client.isOpen) {
+      await client.connect();
+    }
+  } catch (err) {
+    console.error('[Redis] Connection failed:', err.message);
   }
 }
 

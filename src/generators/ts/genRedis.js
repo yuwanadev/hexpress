@@ -21,7 +21,8 @@ export async function connectRedis(config: AppConfig): Promise<void> {
     database: config.redis.db,
   }) as RedisClientType;
 
-  client.on('error', (err: Error) => {
+  client.on('error', (err: any) => {
+    if (err.code === 'ECONNREFUSED') return;
     console.error('[Redis] Client error', err);
   });
 
@@ -33,8 +34,12 @@ export async function connectRedis(config: AppConfig): Promise<void> {
     console.warn('[Redis] Reconnecting...');
   });
 
-  if (!client.isOpen) {
-    await client.connect();
+  try {
+    if (!client.isOpen) {
+      await client.connect();
+    }
+  } catch (err: any) {
+    console.error('[Redis] Connection failed:', err.message);
   }
 }
 
