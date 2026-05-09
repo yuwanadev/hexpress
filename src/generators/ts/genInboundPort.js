@@ -19,7 +19,8 @@ export interface I${Name}Port {
 `;
   }
 
-  return `import type { ${resDTO} } from '../dtos/${Name}DTO';
+  return `import type { Span } from '@opentelemetry/api';
+import type { ${resDTO} } from '../dtos/${Name}DTO';
 
 /**
  * ${Name}Port — Inbound Port (Interface)
@@ -28,8 +29,8 @@ export interface I${Name}Port {
  * Use-cases MUST implement this contract.
  */
 export interface I${Name}Port {
-  findById(id: string): Promise<${resDTO}>;
-  findAll(): Promise<${resDTO}[]>;
+  findById(span: Span, id: string): Promise<${resDTO}>;
+  findAll(span: Span): Promise<${resDTO}[]>;
 }
 `;
 }

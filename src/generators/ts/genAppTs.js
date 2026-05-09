@@ -5,15 +5,16 @@ function genAppTs(type) {
 import { errorHandler } from "./shared/infrastructure/http/errorHandler";
 import { responseHandler } from "./shared/infrastructure/http/responseHandler";
 import { registerModules } from "./shared/infrastructure/di/ctn";
-import config from "./config/index";
 import cors from "cors";
 import helmet from "helmet";
 
 export class App {
   private readonly app: Application;
   private readonly router: Router;
+  private readonly config: any;
 
-  constructor() {
+  constructor(config: any) {
+    this.config = config;
     this.app = express();
     this.router = express.Router();
     this.configure();
@@ -49,10 +50,10 @@ export class App {
   }
 
   public listen() {
-    return this.app.listen(config.port, () => {
-      console.log(\`[Server] Listening on port \${config.port} (\${config.env})\`);
-      if (config.env === "development") {
-        console.log(JSON.stringify(config));
+    return this.app.listen(this.config.port, () => {
+      console.log(\`[Server] \${this.config.app.name} v\${this.config.app.version} listening on port \${this.config.port} (\${this.config.env})\`);
+      if (this.config.env === "development") {
+        console.log(JSON.stringify(this.config));
       }
     });
   }

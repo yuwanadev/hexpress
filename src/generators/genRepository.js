@@ -46,7 +46,8 @@ export class ${Name}Repository extends ${Name}${Suffix} {
 `;
   }
 
-  return `import { ${Name}${Suffix} } from '../../../../application/ports/outbound/${Name}${Suffix}.js';
+  return `import { telemetry } from '${type === 'modular-monolith' ? '../../../../../../' : '../../../../'}config/telemetry.js';
+import { ${Name}${Suffix} } from '../../../../application/ports/outbound/${Name}${Suffix}.js';
 import { ${Name} } from '../../../../domain/entities/${Name}.js';
 import { AppError } from '${type === 'modular-monolith' ? '../../../../../../' : '../../../../'}shared/infrastructure/http/AppError.js';
 
@@ -55,8 +56,7 @@ import { AppError } from '${type === 'modular-monolith' ? '../../../../../../' :
  *
  * Implements ${Name}${Suffix}.
  * Uses pg Pool for raw SQL queries.
- * Uses ${Name}.toDomain() and entity.toPersistence() for mapping.
- * Swap the driver here without touching any other layer.
+ * Each method opens an OTel span and ends it in the finally block.
  */
 export class ${Name}Repository extends ${Name}${Suffix} {
   /**
@@ -67,7 +67,8 @@ export class ${Name}Repository extends ${Name}${Suffix} {
     this.pool = pool;
   }
 
-  async findById(id) {
+  async findById(span, id) {
+    const { span: childSpan } = telemetry.startChildSpan(span, '${Name}Repository.findById');
     try {
       const { rows } = await this.pool.query(
         'SELECT * FROM ${table} WHERE id = $1 LIMIT 1',
@@ -76,27 +77,24 @@ export class ${Name}Repository extends ${Name}${Suffix} {
       if (!rows[0]) return null;
       return ${Name}.toDomain(rows[0]);
     } catch (err) {
+      telemetry.setLogError(childSpan, err);
       throw new AppError(err.message, 500);
+    } finally {
+      childSpan.end();
     }
   }
 
-  async findAll() {
+  async findAll(span) {
+    const { span: childSpan } = telemetry.startChildSpan(span, '${Name}Repository.findAll');
     try {
       const { rows } = await this.pool.query('SELECT * FROM ${table}');
       return rows.map((r) => ${Name}.toDomain(r));
     } catch (err) {
+      telemetry.setLogError(childSpan, err);
       throw new AppError(err.message, 500);
+    } finally {
+      childSpan.end();
     }
-  }
-
-  async save(entity) {
-    // TODO: implement save/upsert with raw SQL
-    console.warn('[Repository] save() not implemented');
-  }
-
-  async delete(id) {
-    // TODO: implement delete with raw SQL
-    console.warn('[Repository] delete() not implemented');
   }
 }
 `;

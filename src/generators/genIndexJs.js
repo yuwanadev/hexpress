@@ -1,8 +1,14 @@
 'use strict';
 
 function genIndexJs(port = 3000) {
-  return `import { App } from './src/app.js';
-import { closePool } from './src/config/database.js';
+  return `import config from './src/config/index.js';
+// ── OpenTelemetry must be initialised before any other imports ───────────────
+import { initTelemetry, shutdownTelemetry } from './src/config/telemetry.js';
+initTelemetry(config);
+
+import { App } from './src/app.js';
+import { connectDatabase, disconnectDatabase } from './src/config/database.js';
+import { connectRedis, disconnectRedis } from './src/config/redis.js';
 
 process.on('uncaughtException', (error) => {
   console.error('[Server] Uncaught Exception:', error);
@@ -14,12 +20,22 @@ process.on('unhandledRejection', (reason) => {
   process.exit(1);
 });
 
-const app = new App();
+// ── Connect Infrastructure before accepting traffic ───────────────────────────
+await Promise.all([
+  connectDatabase(),
+  connectRedis(),
+]);
+
+const app = new App(config);
 const server = app.listen();
 
 process.on('SIGTERM', () => {
   server.close(async () => {
-    await closePool();
+    await Promise.all([
+      disconnectDatabase(),
+      disconnectRedis(),
+      shutdownTelemetry(),
+    ]);
     console.log('[Server] Gracefully shut down');
     process.exit(0);
   });

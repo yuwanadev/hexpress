@@ -34,43 +34,20 @@ export class ${Name}Port {
  */
 export class ${Name}Port {
   /**
-   * @param {${nameDTO}} request
-   * @returns {Promise<${resDTO}>}
-   */
-  async create(request) {
-    throw new Error('${Name}Port.create() not implemented');
-  }
-
-  /**
+   * @param {any} span
    * @param {string} id
    * @returns {Promise<${resDTO}>}
    */
-  async findById(id) {
+  async findById(span, id) {
     throw new Error('${Name}Port.findById() not implemented');
   }
 
   /**
+   * @param {any} span
    * @returns {Promise<${resDTO}[]>}
    */
-  async findAll() {
+  async findAll(span) {
     throw new Error('${Name}Port.findAll() not implemented');
-  }
-
-  /**
-   * @param {string} id
-   * @param {Partial<${nameDTO}>} request
-   * @returns {Promise<${resDTO}>}
-   */
-  async update(id, request) {
-    throw new Error('${Name}Port.update() not implemented');
-  }
-
-  /**
-   * @param {string} id
-   * @returns {Promise<void>}
-   */
-  async delete(id) {
-    throw new Error('${Name}Port.delete() not implemented');
   }
 }
 `;

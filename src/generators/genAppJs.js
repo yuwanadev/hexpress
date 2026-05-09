@@ -7,10 +7,10 @@ import helmet from 'helmet';
 import { errorHandler } from './shared/infrastructure/http/errorHandler.js';
 import { responseHandler } from './shared/infrastructure/http/responseHandler.js';
 import { registerModules } from './shared/infrastructure/di/ctn.js';
-import config from './config/index.js';
 
 export class App {
-  constructor() {
+  constructor(config) {
+    this.config = config;
     this.app = express();
     this.router = express.Router();
     this.configure();
@@ -46,10 +46,10 @@ export class App {
   }
 
   listen() {
-    return this.app.listen(config.port, () => {
-      console.log(\`[Server] Listening on port \${config.port} (\${config.env})\`);
-      if (config.env === "development") {
-        console.log(JSON.stringify(config));
+    return this.app.listen(this.config.port, () => {
+      console.log(\`[Server] \${this.config.app.name} v\${this.config.app.version} listening on port \${this.config.port} (\${this.config.env})\`);
+      if (this.config.env === "development") {
+        console.log(JSON.stringify(this.config));
       }
     });
   }

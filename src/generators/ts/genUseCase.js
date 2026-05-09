@@ -38,7 +38,9 @@ export class ${Name}UseCase implements I${Name}Port {
 `;
   }
 
-  return `import type { I${Name}Port } from '../ports/inbound/${Name}Port';
+  return `import type { Span } from '@opentelemetry/api';
+import { telemetry } from '${type === 'modular-monolith' ? '../../../../' : '../../'}config/telemetry';
+import type { I${Name}Port } from '../ports/inbound/${Name}Port';
 import type { ${Name}ResponseDTO } from '../ports/dtos/${Name}DTO';
 import { to${Name}ResponseDTO } from '../ports/dtos/${Name}DTO';
 import type { I${Name}${Suffix} } from '../ports/outbound/${Name}${Suffix}';
@@ -50,24 +52,41 @@ import { AppError } from '${type === 'modular-monolith' ? '../../../../' : '../.
  *
  * Implements I${Name}Port (inbound).
  * Depends on I${Name}${Suffix} (outbound) — injected via constructor shorthand.
+ * Each method opens an OTel span and ends it in the finally block.
  */
 export class ${Name}UseCase implements I${Name}Port {
   constructor(private readonly db: I${Name}${Suffix}) {}
 
-  async findById(id: string): Promise<${Name}ResponseDTO> {
-    const entity = await this.findOrFail(id);
-    return to${Name}ResponseDTO(entity);
+  async findById(span: Span, id: string): Promise<${Name}ResponseDTO> {
+    const { span: childSpan } = telemetry.startChildSpan(span, '${Name}UseCase.findById');
+    try {
+      const entity = await this.findOrFail(childSpan, id);
+      return to${Name}ResponseDTO(entity);
+    } catch (err) {
+      telemetry.setLogError(childSpan, err);
+      throw err;
+    } finally {
+      childSpan.end();
+    }
   }
 
-  async findAll(): Promise<${Name}ResponseDTO[]> {
-    const entities = await this.db.findAll();
-    return entities.map(to${Name}ResponseDTO);
+  async findAll(span: Span): Promise<${Name}ResponseDTO[]> {
+    const { span: childSpan } = telemetry.startChildSpan(span, '${Name}UseCase.findAll');
+    try {
+      const entities = await this.db.findAll(childSpan);
+      return entities.map(to${Name}ResponseDTO);
+    } catch (err) {
+      telemetry.setLogError(childSpan, err);
+      throw err;
+    } finally {
+      childSpan.end();
+    }
   }
 
   // ── Private ───────────────────────────────────────────────────────────────
 
-  private async findOrFail(id: string): Promise<${Name}> {
-    const entity = await this.db.findById(id);
+  private async findOrFail(span: Span, id: string): Promise<${Name}> {
+    const entity = await this.db.findById(span, id);
     if (!entity) {
       throw new AppError('${Name} not found: ' + id, 404);
     }

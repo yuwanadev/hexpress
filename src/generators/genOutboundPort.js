@@ -32,34 +32,20 @@ export class ${Name}${Suffix} {
  */
 export class ${Name}${Suffix} {
   /**
+   * @param {any} span
    * @param {string} id
    * @returns {Promise<import('../../../domain/entities/${Entity}.js').${Entity}|null>}
    */
-  async findById(id) {
+  async findById(span, id) {
     throw new Error('${Name}${Suffix}.findById() not implemented');
   }
 
   /**
+   * @param {any} span
    * @returns {Promise<import('../../../domain/entities/${Entity}.js').${Entity}[]>}
    */
-  async findAll() {
+  async findAll(span) {
     throw new Error('${Name}${Suffix}.findAll() not implemented');
-  }
-
-  /**
-   * @param {import('../../../domain/entities/${Entity}.js').${Entity}} entity
-   * @returns {Promise<void>}
-   */
-  async save(entity) {
-    throw new Error('${Name}${Suffix}.save() not implemented');
-  }
-
-  /**
-   * @param {string} id
-   * @returns {Promise<void>}
-   */
-  async delete(id) {
-    throw new Error('${Name}${Suffix}.delete() not implemented');
   }
 }
 `;

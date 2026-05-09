@@ -55,10 +55,23 @@ export async function getClient() {
 }
 
 /**
- * Gracefully drain the pool (call on SIGTERM / app shutdown).
+ * Connect to database. Call once at application startup.
+ *
+ * @returns {Promise<void>}
  */
-export async function closePool() {
+export async function connectDatabase() {
+  await pool.query('SELECT 1');
+  console.log('[Database] Connected');
+}
+
+/**
+ * Gracefully drain the pool (call on SIGTERM / app shutdown).
+ *
+ * @returns {Promise<void>}
+ */
+export async function disconnectDatabase() {
   await pool.end();
+  console.log('[Database] Disconnected');
 }
 
 export default pool;

@@ -119,6 +119,8 @@ async function initProject(argv) {
   const configDir = {
     [`index.${ext}`]: gen.genConfig(port, type),
     [`database.${ext}`]: gen.genDatabase(),
+    [`redis.${ext}`]: gen.genRedis(),
+    [`telemetry.${ext}`]: gen.genTelemetry(),
   };
 
   // ── Project tree (minimal — no placeholder modules) ───────────────────────

@@ -19,7 +19,14 @@ function genPackageJson(name, type) {
       "dotenv": "^16.4.0",
       "express": "^4.18.2",
       "helmet": "^7.1.0",
-      "pg": "^8.13.0"
+      "pg": "^8.13.0",
+      "redis": "^4.7.0",
+      "@opentelemetry/sdk-node":                   "^0.52.0",
+      "@opentelemetry/sdk-trace-node":             "^1.25.0",
+      "@opentelemetry/exporter-trace-otlp-http":   "^0.52.0",
+      "@opentelemetry/resources":                  "^1.25.0",
+      "@opentelemetry/semantic-conventions":       "^1.25.0",
+      "@opentelemetry/api":                        "^1.9.0",
     },
     "devDependencies": {
       "@types/cors": "^2.8.19",

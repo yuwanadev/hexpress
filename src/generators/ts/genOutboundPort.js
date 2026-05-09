@@ -20,7 +20,8 @@ export interface I${Name}${Suffix} {
 `;
   }
 
-  return `import type { ${Entity} } from '../../../domain/entities/${Entity}';
+  return `import type { Span } from '@opentelemetry/api';
+import type { ${Entity} } from '../../../domain/entities/${Entity}';
 
 /**
  * ${Name}${Suffix} — Outbound Port (Interface)
@@ -29,8 +30,8 @@ export interface I${Name}${Suffix} {
  * Repository adapters MUST implement this contract.
  */
 export interface I${Name}${Suffix} {
-  findById(id: string): Promise<${Entity} | null>;
-  findAll(): Promise<${Entity}[]>;
+  findById(span: Span, id: string): Promise<${Entity} | null>;
+  findAll(span: Span): Promise<${Entity}[]>;
 }
 `;
 }

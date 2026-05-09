@@ -36,7 +36,9 @@ export class ${Name}Repository implements I${Name}${Suffix} {
 `;
   }
 
-  return `import type { Pool } from 'pg';
+  return `import type { Span } from '@opentelemetry/api';
+import { telemetry } from '${type === 'modular-monolith' ? '../../../../../../' : '../../../../'}config/telemetry';
+import type { Pool } from 'pg';
 import type { I${Name}${Suffix} } from '../../../../application/ports/outbound/${Name}${Suffix}';
 import { ${Name} } from '../../../../domain/entities/${Name}';
 import { AppError } from '${type === 'modular-monolith' ? '../../../../../../' : '../../../../'}shared/infrastructure/http/AppError';
@@ -46,13 +48,13 @@ import { AppError } from '${type === 'modular-monolith' ? '../../../../../../' :
  *
  * Implements I${Name}${Suffix}.
  * Uses pg Pool for raw SQL queries.
- * Uses ${Name}.toDomain() and entity.toPersistence() for mapping.
- * Swap the driver here without touching any other layer.
+ * Each method opens an OTel span and ends it in the finally block.
  */
 export class ${Name}Repository implements I${Name}${Suffix} {
   constructor(private readonly pool: Pool) {}
 
-  async findById(id: string): Promise<${Name} | null> {
+  async findById(span: Span, id: string): Promise<${Name} | null> {
+    const { span: childSpan } = telemetry.startChildSpan(span, '${Name}Repository.findById');
     try {
       const { rows } = await this.pool.query(
         'SELECT * FROM ${table} WHERE id = $1 LIMIT 1',
@@ -61,16 +63,23 @@ export class ${Name}Repository implements I${Name}${Suffix} {
       if (!rows[0]) return null;
       return ${Name}.toDomain(rows[0]);
     } catch (err) {
+      telemetry.setLogError(childSpan, err);
       throw new AppError((err as Error).message, 500);
+    } finally {
+      childSpan.end();
     }
   }
 
-  async findAll(): Promise<${Name}[]> {
+  async findAll(span: Span): Promise<${Name}[]> {
+    const { span: childSpan } = telemetry.startChildSpan(span, '${Name}Repository.findAll');
     try {
       const { rows } = await this.pool.query('SELECT * FROM ${table}');
       return rows.map((r) => ${Name}.toDomain(r));
     } catch (err) {
+      telemetry.setLogError(childSpan, err);
       throw new AppError((err as Error).message, 500);
+    } finally {
+      childSpan.end();
     }
   }
 }

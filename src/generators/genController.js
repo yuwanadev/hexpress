@@ -45,13 +45,15 @@ export class ${Name}Controller {
 `;
   }
 
-  return `import { ${Name}Port } from '../../../../application/ports/inbound/${Name}Port.js';
+  return `import { telemetry } from '${type === 'modular-monolith' ? '../../../../' : '../../'}config/telemetry.js';
+import { ${Name}Port } from '../../../../application/ports/inbound/${Name}Port.js';
 
 /**
  * ${Name}Controller — Inbound HTTP Adapter
  *
  * Combines route registration and handler methods.
  * Implements no business logic — delegates entirely to the use-case (port).
+ * Each handler opens an OTel span and ends it in the finally block.
  *
  * Usage (in wiring):
  *   const ctrl = new ${Name}Controller(${varUseCase});
@@ -76,48 +78,36 @@ export class ${Name}Controller {
    */
   registerRoutes(router) {
     router.use(this.prefix, router);
-    router.post('/',       this.#create.bind(this));
     router.get('/',        this.#findAll.bind(this));
     router.get('/:id',     this.#findById.bind(this));
-    router.put('/:id',     this.#update.bind(this));
-    router.delete('/:id',  this.#delete.bind(this));
   }
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
-  async #create(req, res, next) {
-    try {
-      const result = await this.useCase.create(req.body);
-      res.ApiResponse(result, 201);
-    } catch (err) { next(err); }
-  }
-
   async #findAll(req, res, next) {
+    const { span } = telemetry.startSpan('${Name}Controller.findAll');
     try {
-      const result = await this.useCase.findAll();
+      const result = await this.useCase.findAll(span);
       res.ApiResponse(result);
-    } catch (err) { next(err); }
+    } catch (err) {
+      telemetry.setLogError(span, err);
+      next(err);
+    } finally {
+      span.end();
+    }
   }
 
   async #findById(req, res, next) {
+    const { span } = telemetry.startSpan('${Name}Controller.findById');
     try {
-      const result = await this.useCase.findById(req.params.id);
+      const result = await this.useCase.findById(span, req.params.id);
       res.ApiResponse(result);
-    } catch (err) { next(err); }
-  }
-
-  async #update(req, res, next) {
-    try {
-      const result = await this.useCase.update(req.params.id, req.body);
-      res.ApiResponse(result);
-    } catch (err) { next(err); }
-  }
-
-  async #delete(req, res, next) {
-    try {
-      await this.useCase.delete(req.params.id);
-      res.status(204).send();
-    } catch (err) { next(err); }
+    } catch (err) {
+      telemetry.setLogError(span, err);
+      next(err);
+    } finally {
+      span.end();
+    }
   }
 }
 `;
