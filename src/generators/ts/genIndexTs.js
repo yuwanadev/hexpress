@@ -20,25 +20,32 @@ process.on("unhandledRejection", (reason: unknown) => {
   process.exit(1);
 });
 
-// ── Connect Infrastructure before accepting traffic ───────────────────────────
-await Promise.all([
-  connectDatabase(config),
-  connectRedis(config),
-]);
+async function bootstrap() {
+  // ── Connect Infrastructure before accepting traffic ───────────────────────────
+  await Promise.all([
+    connectDatabase(config),
+    connectRedis(config),
+  ]);
 
-const app = new App(config);
-const server = app.listen();
+  const app = new App(config);
+  const server = app.listen();
 
-process.on("SIGTERM", () => {
-  server.close(async () => {
-    await Promise.all([
-      disconnectDatabase(),
-      disconnectRedis(),
-      shutdownTelemetry(),
-    ]);
-    console.log("[Server] Gracefully shut down");
-    process.exit(0);
+  process.on("SIGTERM", () => {
+    server.close(async () => {
+      await Promise.all([
+        disconnectDatabase(),
+        disconnectRedis(),
+        shutdownTelemetry(),
+      ]);
+      console.log("[Server] Gracefully shut down");
+      process.exit(0);
+    });
   });
+}
+
+bootstrap().catch((error: unknown) => {
+  console.error("[Server] Fatal error during bootstrap:", error);
+  process.exit(1);
 });
 `;
 }
