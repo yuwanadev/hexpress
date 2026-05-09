@@ -50,7 +50,7 @@ async function generateCommand(argv) {
     );
   }
 
-  if (!name) {
+  if (!name && artefact !== 'config') {
     name = await prompt('Name of the artefact (e.g. "user", "order"):\n> ', (ans) => ans.trim() || null);
   }
 
@@ -61,13 +61,15 @@ async function generateCommand(argv) {
   }
 
   const { root, config } = project;
-  await ensureConfigAssets(root, config);
+  if (artefact !== 'config') {
+    await ensureConfigAssets(root, config);
+  }
   ensureSharedAssets(root, config);
 
   // For monolith: detect or ask which module scope we are in
   let scope = detectCurrentModule(root, config);
 
-  if (config.type === 'modular-monolith' && !scope && artefact !== 'middleware') {
+  if (config.type === 'modular-monolith' && !scope && artefact !== 'middleware' && artefact !== 'config') {
     const modules = config.modules || [];
     if (modules.length === 0) {
       log.info('No modules found. Creating new module...');
