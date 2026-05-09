@@ -14,7 +14,6 @@
 const { parseArgs } = require('../src/utils/parseArgs');
 const { log } = require('../src/utils/logger');
 const { initProject } = require('../src/commands/init');
-const { addCommand } = require('../src/commands/add');
 const { generateCommand } = require('../src/commands/generate');
 const { infoCommand } = require('../src/commands/info');
 
