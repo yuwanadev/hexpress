@@ -36,13 +36,15 @@ async function generateCommand(argv) {
       '[8]  dto\n' +
       '[9]  event\n' +
       '[10] error\n' +
-      '[11] middleware\n> ',
+      '[11] middleware\n' +
+      '[12] config\n> ',
       (ans) => {
         const map = {
           '1': 'feature', '2': 'entity', '3': 'usecase', '4': 'port', '5': 'controller',
-          '6': 'repository', '7': 'wiring', '8': 'dto', '9': 'event', '10': 'error', '11': 'middleware'
+          '6': 'repository', '7': 'wiring', '8': 'dto', '9': 'event', '10': 'error', '11': 'middleware',
+          '12': 'config'
         };
-        const valid = ['feature', 'entity', 'usecase', 'port', 'controller', 'repository', 'wiring', 'dto', 'event', 'error', 'middleware'];
+        const valid = ['feature', 'entity', 'usecase', 'port', 'controller', 'repository', 'wiring', 'dto', 'event', 'error', 'middleware', 'config'];
         return map[ans] || (valid.includes(ans) ? ans : null);
       }
     );
@@ -136,8 +138,12 @@ async function generateCommand(argv) {
     case 'mid':
       await generateMiddleware(root, config, scope, name);
       break;
+    case 'config':
+    case 'cfg':
+      await generateConfig(root, config);
+      break;
     default:
-      log.error(`Unknown artefact "${artefact}". Choose: feature | entity | usecase | port | controller | repository | wiring | dto | event | error | middleware`);
+      log.error(`Unknown artefact "${artefact}". Choose: feature | entity | usecase | port | controller | repository | wiring | dto | event | error | middleware | config`);
       process.exit(1);
   }
 }
@@ -453,6 +459,12 @@ async function ensureConfigAssets(root, config) {
     }
   }
   log.blank();
+}
+
+async function generateConfig(root, config) {
+  log.title('hexpress generate config');
+  log.blank();
+  await ensureConfigAssets(root, config);
 }
 
 function ensureSharedAssets(root, config) {

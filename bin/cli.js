@@ -34,6 +34,7 @@ const HELP = `
     error         <Name>    — domain/errors/NameError.{ts|js}
     middleware    <Name>    — shared/middlewares/NameMiddleware.{ts|js}
     dto           <Name>    — dto/NameDTO.{ts|js}
+    config                  — regenerate missing base config files
     feature | f   <Name>    — Full stack: port → usecase → controller+route → repository
 
   Flags (init):
