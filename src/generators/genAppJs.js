@@ -9,6 +9,9 @@ import { responseHandler } from './shared/infrastructure/http/responseHandler.js
 import { registerModules } from './shared/infrastructure/di/ctn.js';
 
 export class App {
+  /**
+   * @param {import('./config/index.js').AppConfig} config
+   */
   constructor(config) {
     this.config = config;
     this.app = express();

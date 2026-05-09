@@ -95,7 +95,7 @@ export let telemetry;
  * Bootstrap OpenTelemetry SDK.
  * Must be called BEFORE any other imports (especially http / express).
  *
- * @param {any} config
+ * @param {import('./index.js').AppConfig} config
  */
 export function initTelemetry(config) {
   const { name, version } = config.app;

@@ -22,11 +22,9 @@ const [, , command, ...rest] = process.argv;
 
 const HELP = `
   Commands:
-    init      <project-name>              Bootstrap a new project
-    add       <name>                      Add a module (monolith) or feature (microservice)
-    generate  <artefact> <name>           Generate a single artefact
-    g         <artefact> <name>
-    info                                  Show project type, modules, features
+    init          <project-name>               Bootstrap a new project
+    generate | g  <artefact> <name>            Generate a single artefact
+    info                                       Show project type, modules, features
 
   Generate artefacts:
     entity        <Name>    — domain/Entity.{ts|js}
@@ -47,7 +45,6 @@ const HELP = `
     hexpress init my-app
     hexpress init my-app --lang ts
     hexpress init user-service --type microservice --lang ts
-    hexpress add order
     hexpress g f payment
     hexpress g entity Invoice
     hexpress info
@@ -57,9 +54,6 @@ async function main() {
   switch (command) {
     case 'init':
       await initProject(rest);
-      break;
-    case 'add':
-      addCommand(rest);
       break;
     case 'generate':
     case 'g':

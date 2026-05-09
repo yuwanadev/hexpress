@@ -8,6 +8,7 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { SimpleSpanProcessor } from '@opentelemetry/sdk-trace-node';
 import { Resource } from '@opentelemetry/resources';
 import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
+import type { AppConfig } from './index';
 
 export class Telemetry {
   constructor(private readonly serviceName: string) {}
@@ -94,9 +95,9 @@ export let telemetry: Telemetry;
  * Bootstrap OpenTelemetry SDK.
  * Must be called BEFORE any other imports (especially http / express).
  *
- * @param {any} config
+ * @param {AppConfig} config
  */
-export function initTelemetry(config: any): void {
+export function initTelemetry(config: AppConfig): void {
   const { name, version } = config.app;
   const exporter = new OTLPTraceExporter({
     url: config.telemetry.endpoint,

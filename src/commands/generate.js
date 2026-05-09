@@ -59,6 +59,7 @@ async function generateCommand(argv) {
   }
 
   const { root, config } = project;
+  await ensureConfigAssets(root, config);
   ensureSharedAssets(root, config);
 
   // For monolith: detect or ask which module scope we are in
@@ -417,6 +418,40 @@ async function generateError(root, config, scope, name) {
 
   log.blank();
   log.success(`Domain error "${errName}" created.`);
+  log.blank();
+}
+
+async function ensureConfigAssets(root, config) {
+  const lang = config.lang ?? 'js';
+  const ext = lang === 'ts' ? 'ts' : 'js';
+  const gen = resolveGenerators(lang);
+  const configBase = path.join(root, 'src', 'config');
+
+  const assets = [
+    { name: `index.${ext}`, content: gen.genConfig(config.port, config.type) },
+    { name: `telemetry.${ext}`, content: gen.genTelemetry() },
+    { name: `database.${ext}`, content: gen.genDatabase() },
+    { name: `redis.${ext}`, content: gen.genRedis() },
+  ];
+
+  const missing = assets.filter(a => !fs.existsSync(path.join(configBase, a.name)));
+  if (missing.length === 0) return;
+
+  log.blank();
+  log.info(`Some base config files (src/config/*) are missing.`);
+  log.blank();
+
+  for (const asset of missing) {
+    const ok = await confirm(`Generate "${asset.name}"?`, false);
+    if (ok) {
+      if (!fs.existsSync(configBase)) {
+        fs.mkdirSync(configBase, { recursive: true });
+      }
+      const fullPath = path.join(configBase, asset.name);
+      fs.writeFileSync(fullPath, asset.content, 'utf8');
+      log.file(path.relative(root, fullPath));
+    }
+  }
   log.blank();
 }
 

@@ -7,13 +7,14 @@ import { responseHandler } from "./shared/infrastructure/http/responseHandler";
 import { registerModules } from "./shared/infrastructure/di/ctn";
 import cors from "cors";
 import helmet from "helmet";
+import type { AppConfig } from "./config/index";
 
 export class App {
   private readonly app: Application;
   private readonly router: Router;
-  private readonly config: any;
+  private readonly config: AppConfig;
 
-  constructor(config: any) {
+  constructor(config: AppConfig) {
     this.config = config;
     this.app = express();
     this.router = express.Router();
@@ -33,20 +34,28 @@ export class App {
     );
     this.app.use(helmet({ crossOriginResourcePolicy: false }));
 
-    /**
-     * Body parser
-     */
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
 
     /**
-     * Response helpers (res.ApiResponse, res.ApiResponseWithMessage)
+     * DI Registration
+     */
+    registerModules(this.router);
+
+    /**
+     * Routes
+     */
+    this.app.use(this.router);
+
+    /**
+     * Global Error Handler
+     */
+    this.app.use(errorHandler);
+
+    /**
+     * Global Response Handler
      */
     this.app.use(responseHandler);
-
-    this.app.use("/api", this.router);
-    registerModules(this.router);
-    this.app.use(errorHandler);
   }
 
   public listen() {
@@ -57,11 +66,8 @@ export class App {
       }
     });
   }
-
-  public getApp(): Application {
-    return this.app;
-  }
-}`;
+}
+`;
 }
 
 module.exports = { genAppTs };

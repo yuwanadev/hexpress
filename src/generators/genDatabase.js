@@ -2,36 +2,13 @@
 
 function genDatabase() {
   return `import pg from 'pg';
-import config from './index.js';
 
 const { Pool } = pg;
 
 /**
- * Database connection pool.
- *
- * Uses the centralised config object so no file needs to touch process.env
- * directly. The pool is created once and shared across the application.
- *
- * @see https://node-postgres.com/apis/pool
+ * @type {import('pg').Pool}
  */
-const pool = new Pool({
-  host:     config.db.host,
-  port:     config.db.port,
-  database: config.db.database,
-  user:     config.db.user,
-  password: config.db.password,
-
-  // Pool behaviour
-  min:                    config.db.pool.min,
-  max:                    config.db.pool.max,
-  idleTimeoutMillis:      config.db.pool.idleTimeoutMillis,
-  connectionTimeoutMillis: config.db.pool.connectionTimeoutMillis,
-});
-
-// Emit a log on unexpected errors so connections are not silently lost
-pool.on('error', (err) => {
-  console.error('[DB Pool] Unexpected error on idle client', err);
-});
+export let pool;
 
 /**
  * Convenience wrapper — runs a single query against the pool.
@@ -41,6 +18,7 @@ pool.on('error', (err) => {
  * @returns {Promise<import('pg').QueryResult>}
  */
 export async function query(text, params) {
+  if (!pool) throw new Error('[Database] Pool not initialised. Call connectDatabase(config) first.');
   return pool.query(text, params);
 }
 
@@ -51,15 +29,35 @@ export async function query(text, params) {
  * @returns {Promise<import('pg').PoolClient>}
  */
 export async function getClient() {
+  if (!pool) throw new Error('[Database] Pool not initialised. Call connectDatabase(config) first.');
   return pool.connect();
 }
 
 /**
  * Connect to database. Call once at application startup.
- *
+ * 
+ * @param {import('./index.js').AppConfig} config
  * @returns {Promise<void>}
  */
-export async function connectDatabase() {
+export async function connectDatabase(config) {
+  pool = new Pool({
+    host:     config.db.host,
+    port:     config.db.port,
+    database: config.db.database,
+    user:     config.db.user,
+    password: config.db.password,
+
+    // Pool behaviour
+    min:                    config.db.pool.min,
+    max:                    config.db.pool.max,
+    idleTimeoutMillis:      config.db.pool.idleTimeoutMillis,
+    connectionTimeoutMillis: config.db.pool.connectionTimeoutMillis,
+  });
+
+  pool.on('error', (err) => {
+    console.error('[DB Pool] Unexpected error on idle client', err);
+  });
+
   await pool.query('SELECT 1');
   console.log('[Database] Connected');
 }
@@ -70,11 +68,11 @@ export async function connectDatabase() {
  * @returns {Promise<void>}
  */
 export async function disconnectDatabase() {
-  await pool.end();
-  console.log('[Database] Disconnected');
+  if (pool) {
+    await pool.end();
+    console.log('[Database] Disconnected');
+  }
 }
-
-export default pool;
 `;
 }
 

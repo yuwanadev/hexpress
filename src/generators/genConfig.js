@@ -51,6 +51,8 @@ const env = process.env;
  * @property {string} env
  * @property {number} port
  * @property {string} logLevel
+ * @property {{ name: string, version: string }} app
+ * @property {{ endpoint: string }} telemetry
  * @property {DbConfig} db
  * @property {RedisConfig} redis${type === 'microservice' ? '\n * @property {{ brokers: string[], clientId: string }} kafka' : ''}
  */

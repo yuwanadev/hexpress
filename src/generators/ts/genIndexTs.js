@@ -22,8 +22,8 @@ process.on("unhandledRejection", (reason: unknown) => {
 
 // ── Connect Infrastructure before accepting traffic ───────────────────────────
 await Promise.all([
-  connectDatabase(),
-  connectRedis(),
+  connectDatabase(config),
+  connectRedis(config),
 ]);
 
 const app = new App(config);
