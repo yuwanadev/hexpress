@@ -47,7 +47,7 @@ export class ${Name}Controller {
   }
 
   return `import type { Request, Response, NextFunction, Router } from 'express';
-import { telemetry } from '${type === 'modular-monolith' ? '../../../../' : '../../'}config/telemetry';
+import { telemetry } from '${type === 'modular-monolith' ? '../../../../../../' : '../../../../'}config/telemetry';
 import type { I${Name}Port } from '../../../../application/ports/inbound/${Name}Port';
 
 /**
@@ -55,7 +55,7 @@ import type { I${Name}Port } from '../../../../application/ports/inbound/${Name}
  *
  * Combines route registration and handler methods.
  * Implements no business logic — delegates entirely to the use-case (port).
- * Each handler opens an OTel span and ends it in the finally block.
+ * Each handler opens an OTel span and ends it in the finally block.  
  *
  * Usage (in wiring):
  *   const ctrl = new ${Name}Controller(${varUseCase});

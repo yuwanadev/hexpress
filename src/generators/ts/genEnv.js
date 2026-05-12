@@ -2,6 +2,8 @@
 
 function genEnv(port = 3000, type = 'modular-monolith') {
   const base = [
+    `APP_NAME=hexpress-app`,
+    `APP_VERSION=1.0.0`,
     `NODE_ENV=development`,
     `PORT=${port}`,
     `LOG_LEVEL=info`,

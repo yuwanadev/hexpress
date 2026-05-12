@@ -45,7 +45,7 @@ export class ${Name}Controller {
 `;
   }
 
-  return `import { telemetry } from '${type === 'modular-monolith' ? '../../../../' : '../../'}config/telemetry.js';
+  return `import { telemetry } from '${type === 'modular-monolith' ? '../../../../../../' : '../../../../'}config/telemetry.js';
 import { ${Name}Port } from '../../../../application/ports/inbound/${Name}Port.js';
 
 /**

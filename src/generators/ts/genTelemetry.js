@@ -1,14 +1,13 @@
 'use strict';
 
 function genTelemetry() {
-  return `import { trace, context, SpanStatusCode } from '@opentelemetry/api';
-import type { Tracer, Span, Attributes } from '@opentelemetry/api';
+  return `import type { AppConfig } from './index';
+import { trace, context, Span, Tracer, SpanStatusCode, Attributes } from '@opentelemetry/api';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
-import { SimpleSpanProcessor } from '@opentelemetry/sdk-trace-node';
 import { Resource } from '@opentelemetry/resources';
-import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
-import type { AppConfig } from './index';
+import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 
 export class Telemetry {
   constructor(private readonly serviceName: string) {}
@@ -61,8 +60,7 @@ export class Telemetry {
   // -------- Exception + Status --------
 
   setRecordException(span: Span, error: Error | any) {
-    const message =
-      error instanceof Error ? error.message : typeof error === 'string' ? error : String(error);
+    const message = error instanceof Error ? error.message : typeof error === 'string' ? error : String(error);
     span.setStatus({
       code: SpanStatusCode.ERROR,
       message,
@@ -99,16 +97,24 @@ export let telemetry: Telemetry;
  */
 export function initTelemetry(config: AppConfig): void {
   const { name, version } = config.app;
-  const exporter = new OTLPTraceExporter({
-    url: config.telemetry.endpoint,
-  });
 
   sdk = new NodeSDK({
     resource: new Resource({
-      [SEMRESATTRS_SERVICE_NAME]:    name,
-      [SEMRESATTRS_SERVICE_VERSION]: version,
+      [ATTR_SERVICE_NAME]: name,
+      [ATTR_SERVICE_VERSION]: version,
     }),
-    spanProcessor: new SimpleSpanProcessor(exporter),
+    traceExporter: new OTLPTraceExporter({
+      url: config.telemetry.endpoint,
+    }),
+    instrumentations: [
+      getNodeAutoInstrumentations({
+        '@opentelemetry/instrumentation-express': { enabled: true },
+        '@opentelemetry/instrumentation-http': { enabled: true },
+        '@opentelemetry/instrumentation-fs': { enabled: false },
+        '@opentelemetry/instrumentation-net': { enabled: false },
+        '@opentelemetry/instrumentation-dns': { enabled: false },
+      }),
+    ],
   });
 
   sdk.start();
